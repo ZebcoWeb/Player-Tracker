@@ -2,7 +2,7 @@ import datetime
 
 from mongoengine import fields, Document, NULLIFY
 
-
+from .game import GameModel
 
 
 class WikiModel(Document):

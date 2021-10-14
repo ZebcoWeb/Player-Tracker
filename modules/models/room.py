@@ -2,8 +2,8 @@ import datetime
 
 from mongoengine import fields, Document, CASCADE, NULLIFY
 
-
-
+from .member import MemberModel
+from .game import GameModel
 
 class RoomModel(Document):
 

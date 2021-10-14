@@ -1,10 +1,6 @@
 import datetime
-from typing_extensions import Required
 
 from mongoengine import fields, Document
-
-
-
 
 
 class GameModel(Document):

@@ -2,7 +2,8 @@ import datetime
 
 from mongoengine import fields, Document
 
-
+from .game import GameModel
+from .wiki import WikiModel
 
 
 class MemberModel(Document):
