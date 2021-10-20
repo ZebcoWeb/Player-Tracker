@@ -4,7 +4,14 @@ from enum import Enum
 __all__ = ['LogType']
 
 
-class LogType(Enum):
+class EnumBase(Enum):
+    # return value
+    def __str__(self):
+        return self.value
+
+
+
+class LogType(EnumBase):
 
     Cache = 'CATCH'
     Database = 'DATABASE'
@@ -13,3 +20,6 @@ class LogType(Enum):
     Yaml = 'YAML'
     Discord = 'DISCORD'
     Test = 'TEST'
+
+
+print(LogType.Cache)
