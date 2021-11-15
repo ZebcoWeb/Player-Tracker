@@ -1,8 +1,12 @@
 import logging
+import asyncio
+import aiohttp
 
-from discord_webhook import DiscordWebhook, DiscordEmbed
+from discord import Webhook, Embed, Colour
+from modules.config import Env
+from data.config import Config
 
-from modules.utils.enums import LogType
+from modules.utils import LogType
 
 
 
@@ -12,33 +16,36 @@ __all__ = ['get_logger']
 def set_embed_color(value: int):
     #embed color
     if value in [10,20]:
-        return '0x00BFFF' # blue
+        return Colour.blue() # blue
     elif value == 30:
-        return '0xFFFF00' # yellow
+        return Colour.yellow() # yellow
     elif value == 40:
-        return '0xFFA500' # orange
+        return Colour.orange() # orange
     elif value == 50:
-        return '0xFF0000' # red
+        return Colour.red() # red
     else:
-        return '0x00BFFF' # blue
+        return Colour.blue() # blue
         
 # Discord Handler Class
 
 class DiscordHandler(logging.Handler):
 
-    def emit(self, record):
-
+    async def _execute_webhook(self, record):
         log_entry = self.format(record)
-        embed = DiscordEmbed(
+        embed = Embed(
             description=log_entry, 
             color=set_embed_color(record.levelno)
             )
         embed.set_footer(text='Player Tracker Log System')
-        discord_webhook = DiscordWebhook(
-            url='https://discord.com/api/webhooks/876140557569757184/Ayldf7G-eGz73k0lnySoTJNkNafF5UFgEcrTFFOzi1fpyGTr8L4_7qnJRHSx9w7VJPGY'
-            )
-        discord_webhook.add_embed(embed)
-        return discord_webhook.execute()
+
+        async with aiohttp.ClientSession() as session:
+            webhook = Webhook.from_url('https://discord.com/api/webhooks/876140557569757184/Ayldf7G-eGz73k0lnySoTJNkNafF5UFgEcrTFFOzi1fpyGTr8L4_7qnJRHSx9w7VJPGY', session=session)
+            await webhook.send(embed=embed)
+
+
+    def emit(self, record):
+        asyncio.run(self._execute_webhook(record))
+        
 
 def add_handler(name, filename):
 
@@ -61,16 +68,17 @@ def add_handler(name, filename):
     f_handler.setFormatter(f_format)
     logger.addHandler(f_handler)
 
-    # Discord log handler
-    d_handler = DiscordHandler()
-    d_format = logging.Formatter('**`[%(name)s]`** **%(levelname)s** : %(message)s\n\n**Path:**\n%(pathname)s \n\n- %(asctime)s')
-    d_handler.setFormatter(d_format)
-    logger.addHandler(d_handler)
+    if Config.DISCORD_DEBUG:
+        # Discord log handler
+        d_handler = DiscordHandler()
+        d_format = logging.Formatter('**`[%(name)s]`** **%(levelname)s** : %(message)s\n\n**Path:**\n%(pathname)s \n\n- %(asctime)s')
+        d_handler.setFormatter(d_format)
+        logger.addHandler(d_handler)
     
 
     return logger
 
 
 # Create log message func
-def get_logger(name: str = LogType.Test):
+def get_logger(name: str):
     return add_handler(str(name), 'logs')
