@@ -13,8 +13,14 @@ def time_diff_min(start_time: datetime, end_time: datetime = datetime.now()):
 
 class Attach:
     """Construct a Attach for local files"""
-    def __init__(self, filepath) -> None:
-        self.filepath = filepath
+    def __init__(self, filepath: str) -> None:
+        self.filepath = filepath.replace('\\', '/')
+    
+    def __str__(self) -> str:
+        return f"<Attach filepath='{self.filepath}'>"
+
+    def __repr__(self) -> str:
+        return f"<Attach filepath='{self.filepath}' filename='{self.filename}' size='{self.size} KB'>"
 
     @property
     def filename(self):
@@ -31,5 +37,3 @@ class Attach:
             number = os.path.getsize(self.filepath) / 1024, 
             ndigits=2
         )
-
-
