@@ -8,10 +8,9 @@ from modules.utils import Attach
 
 class GameModel(Document):
     
-    # TODO: Add platform field
     name_key = fields.StringField(required=True, unique=True)
     emoji = fields.LongField(required=True)
-    abbreviation = fields.StringField(max_length=5, unique=True) # That means short name
+    abbreviation = fields.StringField(required=True, max_length=5, unique=True) # That means short name
     logo_path = fields.StringField(required=True)
     banner_path = fields.StringField(default=None)
     total_play_time = fields.IntField(default=0) #! Based on minutes
@@ -23,6 +22,9 @@ class GameModel(Document):
     meta = {
         'ordering': ['-used_value'],
         'collection': 'Game',
+        'indexes': [
+            'name_key',  # text index
+        ]
     }
 
 
@@ -36,7 +38,6 @@ class GameModel(Document):
         '''Return Emoji discord class object'''
         return client.get_emoji(self.emoji)
     
-    # TODO: create Attach class
     @property
     def attach_logo_path(self):
         return Attach(self.logo_path)
