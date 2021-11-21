@@ -1,8 +1,6 @@
 from os import getenv
 
-from dotenv import load_dotenv, get_key
-
-from modules.utils.enums import LogType
+from dotenv import load_dotenv
 
 
 
