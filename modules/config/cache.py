@@ -1,6 +1,6 @@
 from rom import util
 
-from modules.utils.enums import LogType
+from modules.utils import LogType
 from modules.utils import get_logger
 from modules.config import Env
 
