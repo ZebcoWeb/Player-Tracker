@@ -27,7 +27,6 @@ class GameModel(Document):
         ]
     }
 
-
     def save(self, *args, **kwargs):
         if not self.created_at:
             self.created_at = datetime.now()
