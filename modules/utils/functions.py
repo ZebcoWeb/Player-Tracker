@@ -1,15 +1,14 @@
-import os
-import sys
-import discord
+import os, sys, inspect, discord
 
 from datetime import datetime
 
 from discord.colour import Colour
+from beanie import Document
 from pymongo import MongoClient
 
-from data.config import Todoist as TD
-from modules.utils.i18n import i18n
+from data.config import Todoist as TD, Config
 from modules.config import Env
+from modules.utils.i18n import i18n
 
 
 def time_diff_min(start_time: datetime, end_time: datetime = datetime.now()):
@@ -19,6 +18,12 @@ def time_diff_min(start_time: datetime, end_time: datetime = datetime.now()):
     if start_time <= end_time:
         return round((end_time - start_time).total_seconds() / 60.0)
     return 0
+
+
+def space(context: str, distance: int = 3) -> str:
+    spaces = ' ' * distance
+    return spaces + context + spaces
+    
 
 def success_embed(msg: str, color = None):
     return discord.Embed(
@@ -48,6 +53,29 @@ def db_is_alive():
         sys.exit(1)
 
 
+def load_extentions(client):
+        for path, subdirs, files in os.walk('cogs/'):
+            for name in files:
+                if name.endswith('.py'):
+                    filename = os.path.join(path, name).replace('/', '.').replace('\\', '.')[:-3]
+
+                    try:
+                        client.load_extension(filename)
+                    except:
+                        pass
+
+def inspect_models():
+    models = []
+    for name, obj in inspect.getmembers(sys.modules['modules.database.models']):
+        if inspect.isclass(obj):
+            if issubclass(obj, Document):
+
+                if name in Config.IGNORE_MODELS:
+                    pass
+
+                else:
+                    models.append(obj)
+    return models
 
 class Attach:
     """Construct a Attach for local files"""
