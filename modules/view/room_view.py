@@ -1,15 +1,13 @@
 import discord
-
 from discord import ButtonStyle, Client, Colour
 from discord.interactions import Interaction
 from discord.ui import view
 
+from data.config import Category, Config, Emoji, Role
+from modules.database import GameModel, MemberModel, RoomModel
+from modules.utils import i18n, space
+
 from .view import PersistentView
-from modules.database import MemberModel, RoomModel, GameModel
-from modules.utils import i18n
-
-from data.config import Emoji, Role, Category, Config
-
 
 __all__ = ['CreateRoomView']
 
@@ -22,7 +20,7 @@ class CreateRoomView(PersistentView):
         user = interaction.user
         guild = interaction.guild
         ram_role = guild.get_role(Role.RAM)
-        member_model = MemberModel.objects.get(member_id=user.id)
+        member_model = await MemberModel.find_one({'member_id': user.id})
 
         if new_room_category:
             channel_name = 'new-' + user.name.lower()
@@ -53,10 +51,8 @@ class CreateRoomView(PersistentView):
                 color = Colour.green()
             )
 
-            room_model = RoomModel(
-                    creator = member_model,
-                    status = 'process',
-            )
+            room_model = RoomModel(creator=member_model)
+
             form = await channel.send(
                 content=user.mention,
                 embed=em,
@@ -117,7 +113,7 @@ class CreateRoomChooseLang(discord.ui.View):
 
         await interaction.response.edit_message(view=self)
 
-    @discord.ui.button(label='Next', custom_id='choose_next_lang_button',disabled=True ,style=ButtonStyle.green, emoji=Emoji.ARROW_FORWARD)
+    @discord.ui.button(label=space('Next', 3), custom_id='choose_next_lang_button',disabled=True ,style=ButtonStyle.green, emoji=Emoji.ARROW_FORWARD)
     async def choose_lang_next(self, button: discord.ui.Button, interaction: discord.Interaction):
         if self.lang:
             em = discord.Embed(
@@ -136,8 +132,6 @@ class CreateRoomChooseLang(discord.ui.View):
 
 
 
-
-
 class CreateRoomChooseGame(discord.ui.View):
     def __init__(self, client, room_model):
 
@@ -148,32 +142,6 @@ class CreateRoomChooseGame(discord.ui.View):
 
         self.add_item(GamesListSelectMenu(self.client))
         self.add_item(CreateRoomChooseGameNext())
-
-    # @discord.ui.button(label='Next', custom_id='choose_next_game_button', disabled=True, style=ButtonStyle.green, emoji=Emoji.ARROW_FORWARD)
-    # async def choose_game_next(self, button: discord.ui.Button, interaction: discord.Interaction):
-
-    #     data = discord.utils.get(
-    #         self.children, custom_id='choose_games_select'
-    #     )
-    #     game = data.values[0]
-
-    #     if game not in ['next_page', 'previous_page']:
-
-    #         self.room_model.game = GameModel.objects.get(id=game)
-
-    #         em = discord.Embed(
-    #             description='CONTEXT_CHOOSE_ROOM_GAME_DES',
-    #             color = Colour.green()
-    #         )
-    #         em.set_author(name='CONTEXT_CHOOSE_ROOM_GAME_HEADER')
-    #         em.set_footer(text='◇──◇──◇──◇──◇──◇')
-
-            # view = CreateRoomChooseName(self.client, self.room_model)
-
-            # await interaction.response.edit_message(
-            #     embed = em,
-            #     view = view
-            # )
 
 class CreateRoomChooseGameNext(discord.ui.Button):
     def __init__(self):
@@ -190,7 +158,7 @@ class CreateRoomChooseGameNext(discord.ui.Button):
 
         if game not in ['next_page', 'previous_page']:
 
-            self.view.room_model.game = GameModel.objects.get(id=game)
+            self.view.room_model.game = GameModel.get(game)
 
             em = discord.Embed(
                 description='CONTEXT_CHOOSE_ROOM_GAME_DES',
@@ -243,7 +211,7 @@ class GamesListSelectMenu(discord.ui.Select):
                 discord.SelectOption(
                     label = game.name_key,
                     description = '> 0 Playing now',
-                    value = str(game.pk),
+                    value = str(game.id),
                 )
             )
             if len(options) == 23: # create a collection of 23 options
