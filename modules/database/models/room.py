@@ -1,44 +1,47 @@
 from datetime import datetime
+from typing import Optional
+
+from beanie import Document, Insert, Link
+from beanie.odm.actions import after_event
 from discord.client import Client
+from pydantic import Field, constr
 
-from mongoengine import fields, Document, CASCADE, NULLIFY
+from data.config import Config
 
-from .member import MemberModel
 from .game import GameModel
-
+from .member import MemberModel
 
 __all__ = 'RoomModel'
 
 class RoomModel(Document):
-    ROOM_STATUS = (
-        'process', 'complete'
-    )
-    creator = fields.ReferenceField('MemberModel', reverse_delete_rule=CASCADE, required=True)
-    start_msg_id = fields.LongField(required=True) # Msg id when create room
-    room_create_channel_id = fields.LongField(required=True)
-    room_voice_channel_id = fields.LongField(required=False)
-    status = fields.StringField(default='process', choices=ROOM_STATUS)
-    lang = fields.StringField(default=None)
-    game = fields.ReferenceField('GameModel', reverse_delete_rule=NULLIFY, default=None)
-    capacity = fields.StringField(default=None)
-    mode = fields.StringField(default=None)
-    bitrate = fields.StringField(default=None)
-    invite_url = fields.URLField(default=None)
-    tracker_msg_id = fields.LongField(default=None)
-    tracker_channel_id = fields.LongField(default=None)
-    is_waiting_room = fields.BooleanField(default=False)
-    room_again_created = fields.BooleanField(default=False)
-    created_at = fields.DateTimeField()
 
-    meta = {
-        'ordering': ['-created_at'],
-        'collection': 'Room',
-    }
+    creator: Link[MemberModel]              # reverse_delete_rule=CASCADE
+    start_msg_id: Optional[int]             # Msg id when create room
+    room_create_channel_id: Optional[int]
+    room_voice_channel_id: Optional[int]
 
-    def save(self, *args, **kwargs):
-        if not self.created_at:
-            self.created_at = datetime.now()
-        return super(RoomModel, self).save(*args, **kwargs)
+    lang: Optional[constr(max_length=3)]
+    game: Optional[Link[GameModel]]         # reverse_delete_rule=NULLIFY
+    capacity: Optional[str]
+    mode: Optional[str]
+    bitrate: Optional[str]
+    
+    invite_url: Optional[str]
+    tracker_msg_id: Optional[int]
+    tracker_channel_id: Optional[int]
+    is_waiting_room: bool = False
+    room_again_created: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Collection:
+        name = "rooms"
+
+    class Config:
+        arbitrary_types_allowed = True
+        underscore_attrs_are_private = True
+
+    class Settings:
+        validate_on_save = True
 
 
     async def fetch_create_room_channel(self, client: Client):
@@ -58,6 +61,26 @@ class RoomModel(Document):
 
     async def fetch_invite(self, client: Client):
         return await client.fetch_invite(url=self.invite_url)
+
+    # -------------------
+    # Event-based actions
+    # -------------------
+
+    @after_event(Insert)
+    def daily_room_action(self):
+
+        user: MemberModel = self.creator
+
+        if not user.is_staff:
+            if user.is_power_plus:
+                if user.daily_room_created < Config.DAILY_ROOM_LIMIT_POWER_PLUS:
+                    user.daily_room_created += 1
+                    user.save()
+
+            elif user.is_power:
+                if user.daily_room_created < Config.DAILY_ROOM_LIMIT_POWER:
+                    user.daily_room_created += 1
+                    user.save()
 
 
 

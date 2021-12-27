@@ -1,48 +1,45 @@
+from datetime import datetime, timedelta
+from typing import Optional
+
 import aiohttp
-import asyncio
-
-from datetime import datetime
-
-from mongoengine import fields, Document, NULLIFY
 from aiowiki import Wiki
+from beanie import Document, Indexed, Link
+from pydantic import Field, conint, constr
+from pymongo import TEXT
 
-from modules.utils import Attach
+# from modules.utils import Attach
 from .game import GameModel
 
 
 class WikiModel(Document):
     
-    name = fields.StringField(required=True, unique=True)
-    game = fields.ReferenceField('GameModel', reverse_delete_rule=NULLIFY, default=None)
-    logo_path = fields.StringField(required=True)
-    banner_path = fields.StringField(default=None)
-    parent_site = fields.StringField(default='fandom.com')
-    subdomain = fields.StringField(required=True)
-    visit_value = fields.IntField(default=0)
-    is_active = fields.BooleanField(default=True)
-    created_at = fields.DateTimeField()
+    name: Indexed(constr(strict=True, max_length=40, regex='^[A-Za-z0-9_]+$'), unique=True, index_type=TEXT)
+    game: Optional[Link[GameModel]]     # reverse_delete_rule=NULLIFY
+    logo_path: constr(strict=True)      # need to regex
+    banner_path: Optional[str]
+    parent_site: constr(max_length=30) = 'fandom.com'
+    subdomain: constr(strict=True, max_length=35, regex='^[A-Za-z0-9_]+$', to_lower=True)
+    visit_value: conint(ge=0) = 0
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    meta = {
-        'ordering': ['-visit_value'],
-        'collection': 'Wiki',
-        'indexes': [
-            'name',  # text index
-        ]
-    }
+    class Collection:
+        name = "wikis"
+    class Settings:
+        use_cache = True
+        cache_expiration_time = timedelta(minutes=30)
 
-    def save(self, *args, **kwargs):
-        if not self.created_at:
-            self.created_at = datetime.now()
-        return super(WikiModel, self).save(*args, **kwargs)
-    
+    class Config:
+        arbitrary_types_allowed = True
+        underscore_attrs_are_private = True
 
-    @property
-    def attach_logo_path(self):
-        return Attach(self.logo_path)
+    # @property
+    # def attach_logo_path(self):
+    #     return Attach(self.logo_path)
 
-    @property
-    def attach_banner_path(self):
-        return Attach(self.banner_path) if self.banner_path else None
+    # @property
+    # def attach_banner_path(self):
+    #     return Attach(self.banner_path) if self.banner_path else None
     
     @property
     def link(self):
@@ -57,14 +54,15 @@ class WikiModel(Document):
     async def status_code(self):
         async with aiohttp.ClientSession() as session:
             async with session.get(self.api_link) as response:
+                
                 return response.status
 
     @property
-    def is_online(self):
-        status_code = asyncio.run(self.status_code)
+    async def is_online(self):
+        status_code = await self.status_code
 
         return True if status_code == 200 else False
-        
+
     @property
     def wiki(self):
         if self.is_active:
