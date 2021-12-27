@@ -1,14 +1,14 @@
-import discord
 import asyncio
-
 from datetime import datetime
 
+import discord
+from discord.commands import ApplicationContext, Option
 from discord.ext import commands
-from discord.commands import Option, ApplicationContext
 
-from modules.view import TaskView
+from data.config import Assets, Channel, Config, Todoist
 from modules.utils import is_ban
-from data.config import Config, Channel, Assets, Todoist
+from modules.view import TaskView
+
 
 class TaskCog(commands.Cog):
     def __init__(self, client:commands.Bot):
