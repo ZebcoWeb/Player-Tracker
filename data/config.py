@@ -18,6 +18,10 @@ class Emoji:
     GREEN_FILL_LEVEL = '<:e3:921851166080528455>'
 
     TEST = (f'{EMPTY_LEVEL}' * 7)
+
+    CONFIRM_TONE_ID = 868207164001497158
+    AGAIN_TONE_ID = 868207163569471570
+    CABCEL_TONE_ID = 868207163582083083
     
 class Config:
     VERSION = '1.0.0'
@@ -35,6 +39,36 @@ class Config:
 
     IGNORE_MODELS = []
 
+    ROOM_CAPACITIES = {
+        'two_capacity_button' : {'emoji':925129637221249024,'capacity':2},
+        'three_capacity_button' : {'emoji':925129637082841150,'capacity':3},
+        'four_capacity_button' : {'emoji':925129637556801577,'capacity':4},
+        'six_capacity_button' : {'emoji':925129637653274645,'capacity':6},
+        'eight_capacity_button' : {'emoji':925129637921710150,'capacity':8},
+        'twenty_capacity_button' : {'emoji':925129638466973718,'capacity':20},
+        'fifty_capacity_button' : {'emoji':925129638936731658,'capacity':50},
+        'Infinity_capacity_button' : {'emoji':925130234876010568,'capacity':None},
+    }
+
+    ROOM_BITRATES = {
+        '8k_bitrate_button' : {'emoji':925140947107454987,'bitrate':8000},
+        '40k_bitrate_button' : {'emoji':925140947405262848,'bitrate':40000},
+        '64k_bitrate_button' : {'emoji':925140947610775562,'bitrate':64000},
+        '96k_bitrate_button' : {'emoji':925140949028466760,'bitrate':96000},
+    }
+
+    ROOM_MODES = {
+        'public_room_button' : {'emoji':868207163993100339 ,'mode':'public', 'i18n':'Public'},
+        'private_room_button' : {'emoji':868207164420927497 ,'mode':'private', 'i18n':'Private'},
+    }
+
+    ROOM_CONFIRM = {
+        'confirm_button' : {'emoji':868207164001497158, 'id':'confirm_button', 'i18n':'Confirm'},
+        'again_button' : {'emoji':868207163569471570, 'id':'again_button', 'i18n':'Again'},
+        'cancel_button' : {'emoji':868207163582083083, 'id':'cancel_button', 'i18n':'Cancel'},
+    }
+
+    ROOM_CLOSE = {'close_button' : {'emoji':868207163582083083,'EN':'Close room','FA':'بستن روم','id':'close_button'}}
 
 class Todoist:
     SECTION_ID = 70057385
