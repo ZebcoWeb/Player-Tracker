@@ -19,12 +19,6 @@ def time_diff_min(start_time: datetime, end_time: datetime = datetime.now()):
         return round((end_time - start_time).total_seconds() / 60.0)
     return 0
 
-
-def space(context: str, distance: int = 3) -> str:
-    spaces = ' ' * distance
-    return spaces + context + spaces
-    
-
 def success_embed(msg: str, color = None):
     return discord.Embed(
         description = ':white_check_mark: ' + msg,
