@@ -133,3 +133,4 @@ cogs/moderation/main.py
 compressed images
 localazy.exe
 *.json
+*.txt
