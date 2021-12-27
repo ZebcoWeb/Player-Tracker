@@ -1,27 +1,33 @@
+import inspect
 import os
 import sys
-import inspect
 
 from discord import Intents, __version__
-from discord.ext.commands import when_mentioned_or, Bot
+from discord.ext.commands import Bot, when_mentioned_or
 
-# local modules
-from modules.config import Env
-from modules.view import PersistentView
-from modules.database.models import GameModel
-from modules.utils import get_logger, LogType, db_is_alive
 from data.config import Config
+from modules.config import Env, init_database
+from modules.database.models import GameModel
+from modules.utils import LogType, get_logger, load_extentions
+from modules.view import PersistentView
+
 
 class PPClient(Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(
             help_command = None,
             command_prefix = when_mentioned_or('!'),
-            Intents = Intents().all(),
-            )
+            Intents = Intents().all()
+        )
         self.persistent_views_added = False
 
     async def on_ready(self):
+
+        # Load all active games from database
+        print('> Loading games...')
+        self.games = await GameModel.find({'is_active': True}, ignore_cache=True).to_list()
+
+        # Loading persistent views
         print('> Loading persistent views...')
         views_added = []
         for name, obj in inspect.getmembers(sys.modules['modules.view']):
@@ -63,29 +69,22 @@ class PPClient(Bot):
 
 def run_discord_client():
 
+    print('\n> Starting...')
     client = PPClient()
+
+    # Set up the database and check the connection status
+    print('> Check the database connection...')
+    client.loop.run_until_complete(init_database())
 
     # Load extentions
     print('> Loading extentions...')
+    load_extentions(client)
 
-    for path, subdirs, files in os.walk('cogs/'):
-        for name in files:
-            if name.endswith('.py'):
-                filename = os.path.join(path, name).replace('/', '.').replace('\\', '.')[:-3]
-
-                try:
-                    client.load_extension(filename)
-                except:
-                    pass
-
-    print('> Check the database connection...')
-    db_is_alive()
-
-    print('> Loading games...')
-    client.games = GameModel.objects.filter(is_active = True)
-
+    # Run the client
     return client.run(Env.TOKEN) # Run Client
 
 if __name__ == '__main__':
-
     run_discord_client()
+
+
+# سلطان کد زنی نامنظم
