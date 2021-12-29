@@ -41,6 +41,24 @@ class GameModel(Document):
     # def attach_banner_path(self):
     #     return Attach(self.banner_path) if self.banner_path else None
 
+    @staticmethod
+    async def active_games(ignore_cache: bool = False) -> list:
+        return await GameModel.find({"is_active": True}, ignore_cache=ignore_cache).to_list()
+
+    @staticmethod
+    async def trend_games(ignore_cache: bool = False) -> list:
+        return await GameModel.find(
+            {"is_active": True}, 
+            ignore_cache=ignore_cache
+            ).sort(-GameModel.used_value).to_list()
+
+    @staticmethod
+    async def best_play_time(ignore_cache: bool = False) -> list:
+        return await GameModel.find(
+            {"is_active": True}, 
+            ignore_cache=ignore_cache
+            ).sort(-GameModel.total_play_time).to_list()
+
 
     def get_emoji(self, client: Client) -> Emoji:
         '''Return Emoji discord class object'''
