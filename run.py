@@ -25,7 +25,7 @@ class PPClient(Bot):
 
         # Load all active games from database
         print('> Loading games...')
-        self.games = await GameModel.find({'is_active': True}, ignore_cache=True).to_list()
+        self.games = await GameModel.active_games(ignore_cache=True)
 
         # Loading persistent views
         print('> Loading persistent views...')
