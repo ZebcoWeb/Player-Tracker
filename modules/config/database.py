@@ -1,4 +1,4 @@
-import sys, motor
+import sys, motor, asyncio
 
 from beanie import init_beanie
 
@@ -9,11 +9,15 @@ from modules.config import Env
 __all__ = ['init_database']
 
 
-async def init_database():
+async def init_database(loop: asyncio.AbstractEventLoop = None):
     
     client = motor.motor_asyncio.AsyncIOMotorClient(
-        Env.DATABASE_HOST,
-        27017
+        host=Env.DATABASE_HOST,
+        port=27017,
+        username=Env.DATABASE_USER,
+        password=Env.DATABASE_PASSWORD,
+        io_loop=loop,
+        connectTimeoutMS=15000 # 15 seconds
     )
     
     try:
