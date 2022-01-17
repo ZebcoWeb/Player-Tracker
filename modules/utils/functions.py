@@ -46,6 +46,43 @@ def db_is_alive():
         print('> Exiting...')
         sys.exit(1)
 
+def small_letter(text: str) -> str:
+    string = text.lower()
+    dict = {
+        'a': 'ᴀ',
+        'b': 'ʙ',
+        'c': 'ᴄ',
+        'd': 'ᴅ',
+        'e': 'ᴇ',
+        'f': 'ꜰ',
+        'g': 'ɢ',
+        'h': 'ʜ',
+        'i': 'ɪ',
+        'j': 'ᴊ',
+        'k': 'ᴋ',
+        'l': 'ʟ',
+        'm': 'ᴍ',
+        'n': 'ɴ',
+        'o': 'ᴏ',
+        'p': 'ᴘ',
+        'q': 'ǫ',
+        'r': 'ʀ',
+        's': 'ꜱ',
+        't': 'ᴛ',
+        'u': 'ᴜ',
+        'v': 'ᴠ',
+        'w': 'ᴡ',
+        'x': 'x',
+        'y': 'ʏ',
+        'x': 'ᴢ',
+    }
+
+    for char in string:
+        if char in dict:
+            string = string.replace(char, dict[char])
+    
+    return string
+
 
 def load_extentions(client):
         for path, subdirs, files in os.walk('cogs/'):
