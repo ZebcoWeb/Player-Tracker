@@ -1,14 +1,14 @@
 import os, sys, inspect, discord
 
+from string import Template
 from datetime import datetime
 
 from discord.colour import Colour
 from beanie import Document
 from pymongo import MongoClient
 
-from data.config import Todoist as TD, Config
+from data.config import Config, Emoji
 from modules.config import Env
-from modules.utils.i18n import i18n
 
 
 def time_diff_min(start_time: datetime, end_time: datetime = datetime.now()):
@@ -33,14 +33,24 @@ def error_embed(msg: str, color = None):
     )
 
 
+def set_level(pointer_index=1, last=False):
+    if last:
+        return 'ㅤ' + (Emoji.EMPTY_LEVEL + '⠀') * (Config.LEVEL_INDEX_NUM - 1) + Emoji.GREEN_LEVEL
+
+    level = 'ㅤ'
+    for i in range(Config.LEVEL_INDEX_NUM):
+        if i + 1 == pointer_index:
+            level += Emoji.WHITE_LEVEL + '⠀'
+        else:
+            level += Emoji.EMPTY_LEVEL + '⠀'
+    return level
+
 def db_is_alive():
     try:
-
         client = MongoClient(Env.DATABASE_HOST)
         if client.server_info()['ok'] == 1:
             print('> Database is alive!')
         client.close()
-
     except Exception as e:
         print('> Could not connect to database!')
         print('> Exiting...')
@@ -80,7 +90,6 @@ def small_letter(text: str) -> str:
     for char in string:
         if char in dict:
             string = string.replace(char, dict[char])
-    
     return string
 
 
@@ -89,7 +98,6 @@ def load_extentions(client):
             for name in files:
                 if name.endswith('.py'):
                     filename = os.path.join(path, name).replace('/', '.').replace('\\', '.')[:-3]
-
                     try:
                         client.load_extension(filename)
                     except:
@@ -103,7 +111,6 @@ def inspect_models():
 
                 if name in Config.IGNORE_MODELS:
                     pass
-
                 else:
                     models.append(obj)
     return models
@@ -139,3 +146,15 @@ class Attach:
             number = os.path.getsize(self.filepath) / 1024, 
             ndigits=2
         )
+    
+
+class DeltaTemplate(Template):
+    delimiter = "%"
+
+def strfdelta(tdelta, fmt):
+    """Same as strftime but with a timedelta"""
+    d = {"D": tdelta.days}
+    d["H"], rem = divmod(tdelta.seconds, 3600)
+    d["M"], d["S"] = divmod(rem, 60)
+    t = DeltaTemplate(fmt)
+    return t.substitute(**d)

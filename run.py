@@ -1,8 +1,7 @@
 import inspect
-import os
 import sys
 
-from discord import Intents, __version__
+from discord import Intents, __version__, InteractionResponse
 from discord.ext.commands import Bot, when_mentioned_or
 
 from data.config import Config
@@ -12,7 +11,7 @@ from modules.utils import LogType, get_logger, load_extentions
 from modules.view import PersistentView
 
 
-class PPClient(Bot):
+class BotClient(Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(
             help_command = None,
@@ -26,15 +25,20 @@ class PPClient(Bot):
         # Load all active games from database
         print('> Loading games...')
         self.games = await GameModel.active_games(ignore_cache=True)
+    
+         # Load extentions
+        print('> Loading extentions...')
+        load_extentions(self)
 
         # Loading persistent views
         print('> Loading persistent views...')
         views_added = []
+
         for name, obj in inspect.getmembers(sys.modules['modules.view']):
             if inspect.isclass(obj) and issubclass(obj, PersistentView):
 
                 # Specials (Be sure to come with kwargs)
-                if name == 'CreateRoomView':
+                if name == 'CreateRoomView' or 'QandaView':
                     self.add_view(obj(client = self))
 
                 # Others
@@ -70,15 +74,11 @@ class PPClient(Bot):
 def run_discord_client():
 
     print('\n> Starting...')
-    client = PPClient()
+    client = BotClient()
 
     # Set up the database and check the connection status
     print('> Check the database connection...')
-    client.loop.run_until_complete(init_database())
-
-    # Load extentions
-    print('> Loading extentions...')
-    load_extentions(client)
+    client.loop.run_until_complete(init_database(loop=client.loop))
 
     # Run the client
     return client.run(Env.TOKEN) # Run Client

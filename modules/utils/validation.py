@@ -1,24 +1,42 @@
+import functools
+
 from discord import Interaction
+from discord.ext.commands import check
 
-from modules.database.models import MemberModel
-from modules.utils import error_embed, i18n
+from modules.database.models import MemberModel, RoomModel
+from modules.utils import error_embed
 
 
-async def is_ban(interaction: Interaction):
+def is_ban(func):
+    @functools.wraps(func)
+    async def predicate(view , button, interaction, *args, **kwargs):
+        if interaction.user:
+            member_model = await MemberModel.find_one({'member_id': interaction.user.id})
+            if member_model.is_ban_forever:
+                await interaction.response.send_message(
+                    embed=error_embed('You are banned from the platform forever.'),
+                    ephemeral=True
+                )
+            elif member_model.is_ban:
+                await interaction.response.send_message(
+                    embed= error_embed(f'You are banned on the platform for another `{member_model.ban_time_str}`, please wait until then.'),
+                    ephemeral=True
+                )
+            else:
+                return await func(view, button, interaction, *args, **kwargs)
+    return predicate
 
-        member_model = MemberModel.objects.get(member_id=interaction.user.id)
-        
-        locate = i18n(
-            domain='general', 
-        lang= member_model.lang
-        )
-        locate.install()
-        _ = locate.gettext
 
-        if member_model.is_ban:
-
-            await interaction.response.send_message(
-                embed= error_embed(msg = _('BAN_REPLY_CONTEXT'))
-            )
-            return False
-        return True
+def had_room(func):
+    @functools.wraps(func)
+    async def predicate(view , button, interaction, *args, **kwargs):
+        if interaction.user:
+            user_room = await RoomModel.find_one(RoomModel.creator.member_id == interaction.user.id)
+            if not user_room:
+                return await func(view, button, interaction, *args, **kwargs)
+            else:
+                await interaction.response.send_message(
+                    embed=error_embed(f'You already have a room. Delete the previous room to create a new one.\n\n- Your room: <#{RoomModel.room_voice_channel_id}>'),
+                    ephemeral=True
+                )
+    return predicate

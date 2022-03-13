@@ -1,12 +1,13 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
-from beanie import Document, Insert, Link
+from beanie import Document, Insert, Link, Indexed
 from beanie.odm.actions import after_event
 from discord.client import Client
-from pydantic import Field, constr
+from pydantic import Field, constr, conint
+from pydantic.typing import NoneType
 
-from data.config import Config
+from data.config import Config, Regex
 
 from .game import GameModel
 from .member import MemberModel
@@ -18,11 +19,11 @@ class RoomModel(Document):
     creator: Link[MemberModel]              # reverse_delete_rule=CASCADE
     start_msg_id: Optional[int]             # Msg id when create room
     room_create_channel_id: Optional[int]
-    room_voice_channel_id: Optional[int]
+    room_voice_channel_id: Optional[Indexed(int, unique=True)]
 
     lang: Optional[constr(max_length=3)]
     game: Optional[Link[GameModel]]         # reverse_delete_rule=NULLIFY
-    capacity: Optional[str]
+    capacity: Union[str, NoneType] = None
     mode: Optional[str]
     bitrate: Optional[str]
     
@@ -63,7 +64,7 @@ class RoomModel(Document):
         return await client.fetch_invite(url=self.invite_url)
 
     # -------------------
-    # Event-based actions
+    # Signals
     # -------------------
 
     @after_event(Insert)
@@ -81,8 +82,3 @@ class RoomModel(Document):
                 if user.daily_room_created < Config.DAILY_ROOM_LIMIT_POWER:
                     user.daily_room_created += 1
                     user.save()
-
-
-
-
-

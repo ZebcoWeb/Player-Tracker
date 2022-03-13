@@ -7,6 +7,7 @@ from pydantic import Field, conint, constr
 from pymongo import TEXT
 
 from data.config import Config
+from modules.utils import strfdelta
 
 from .game import GameModel
 from .wiki import WikiModel
@@ -35,7 +36,9 @@ class MemberModel(Document):
     is_staff: bool = False
     is_owner: bool = False
     is_robot: bool = False
+    is_power: bool = True
     is_power_plus: bool = False
+    is_ban_forever: bool = False
     is_leaved: bool = False
 
     ban_time: Optional[datetime]
@@ -57,6 +60,13 @@ class MemberModel(Document):
             if self.ban_time > datetime.now():
                 return True
         return False
+    
+    @property
+    def ban_time_str(self):
+        if self.is_ban:
+            timedelta = self.ban_time - datetime.now()
+            return strfdelta(timedelta, '%D days %H:%M:%S')
+        return None
 
     @property
     def is_create_room(self):

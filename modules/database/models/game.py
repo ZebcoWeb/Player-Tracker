@@ -11,7 +11,7 @@ from pymongo import TEXT
 class GameModel(Document):
     
     name_key: Indexed(constr(strict=True, max_length=40, regex='^[A-Za-z0-9_]+$'), unique=True, index_type = TEXT)
-    emoji: conint(strict=True)
+    emoji: int
     short: constr(strict=True, max_length=5, regex='^[A-Za-z0-9_]+$')
     logo_path: constr(strict=True)        # need to regex
     banner_path: Optional[str]            # need to regex

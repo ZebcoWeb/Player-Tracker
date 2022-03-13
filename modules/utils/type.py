@@ -11,16 +11,3 @@ class LogType:
     Test = 'TEST'
     PT = 'PLAYER TRACKER'
     DEBUG = 'DEBUG'
-
-
-class Room:
-
-    class Mode:
-        PRIVATE = ''
-        PUBLIC = ''
-
-    class Bitrate:
-        pass
-
-    class Capacity:
-        pass
