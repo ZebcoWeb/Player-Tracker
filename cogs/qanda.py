@@ -4,7 +4,7 @@ import discord
 from typing import List
 from discord import Color, app_commands
 from discord.ext import commands
-from discord.app_commands import Group
+from discord.app_commands import Group, ContextMenu
 from beanie.odm.operators.find.evaluation import Text
 
 from data.config import Channel, Config, Assets, Emoji
@@ -16,6 +16,10 @@ from modules.database.models import QandaModel, MemberModel
 class Qanda(commands.Cog):
     def __init__(self, client:commands.Bot):
         self.client = client
+        self.client.ctx_menus.append(
+            ContextMenu(name='🤔 Best Answer', callback=self.qanda_choose_answer, guild_ids=[Config.SERVER_ID])
+        )
+        
 
     # Commands Group
     ask = Group(name="ask", description="🤔 Q&A commands", guild_ids=[Config.SERVER_ID])
@@ -174,33 +178,35 @@ class Qanda(commands.Cog):
             paginate = Paginator(timeout=600, client=self.client)
             await paginate.start(interaction, embeds)
 
-    # @app_commands.context_menu(name='🤔 Best Answer')
-    # async def qanda_choose_answer(self, interaction: discord.Interaction, message: discord.Message):
-    #     if message.channel.type == discord.ChannelType.public_thread and message.channel.parent_id == Channel.QA_CHANNEL_ID:
-    #         qanda_model = await QandaModel.find_one(QandaModel.thread_id == message.channel.id, fetch_links=True)
-    #         if qanda_model and not qanda_model.is_answered and qanda_model.questioner.member_id == interaction.user.id:
+
+    async def qanda_choose_answer(self, interaction: discord.Interaction, message: discord.Message):
+        if message.channel.type == discord.ChannelType.public_thread and message.channel.parent_id == Channel.QA_CHANNEL:
+            qanda_model = await QandaModel.find_one(QandaModel.thread_id == message.channel.id, fetch_links=True)
+            if qanda_model and not qanda_model.is_answered and qanda_model.questioner.member_id == interaction.user.id:
                 
-    #             # Reply the best answer
-    #             answer_reply = discord.Embed(description=f'✅ Accepted answer', color=discord.Color.green())
-    #             await message.reply(embed=answer_reply)
+                # Reply the best answer
+                answer_reply = discord.Embed(description=f'✅ Accepted answer', color=discord.Color.green())
+                await message.reply(embed=answer_reply)
 
-    #             # Update the question embed
-    #             question = await message.channel.parent.fetch_message(qanda_model.question_message_id)
-    #             new_embed = question.embeds[0].copy()
-    #             new_embed.color = discord.Color.green()
-    #             new_embed.set_author(name=f'Answered ✅', icon_url=message.author.avatar.url)
-    #             await question.edit(embed=new_embed)
+                # Update the question embed
+                question = await message.channel.parent.fetch_message(qanda_model.question_message_id)
+                new_embed = question.embeds[0].copy()
+                new_embed.color = discord.Color.green()
+                new_embed.set_author(name=f'Answered ✅', icon_url=message.author.avatar.url)
+                await question.edit(embed=new_embed)
 
-    #             # Update database
-    #             member_model = await MemberModel.find_one(MemberModel.member_id == interaction.user.id).inc({MemberModel.question_answered_count: 1})
+                # Update database
+                member_model = await MemberModel.find_one(MemberModel.member_id == interaction.user.id, fetch_links=True)
+                member_model.question_answered_count += 1
                 
-    #             qanda_model.answer = message.content.strip()
-    #             qanda_model.answer_message_id = message.id
-    #             qanda_model.answerer = member_model
-    #             qanda_model.is_answered = True
-    #             await qanda_model.replace()
+                qanda_model.answer = message.content.strip()
+                qanda_model.answer_message_id = message.id
+                qanda_model.answerer = member_model
+                qanda_model.is_answered = True
+                await qanda_model.save()
+                await member_model.save()
 
-    #     await interaction.response.defer()
+        await interaction.response.defer(thinking=False)
 
     # Moderator commands
 

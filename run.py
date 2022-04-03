@@ -28,10 +28,21 @@ class BotClient(Bot):
         print('> Check the database connection...')
         await init_database(loop=self.loop)
 
+        self.ctx_menus = []
+
         # Load extentions
         print('> Loading extentions...')
         await load_extentions(self)
 
+        
+        print('> Loading Context menus...')
+        for menu in self.ctx_menus:
+            try:
+                self.tree.add_command(menu)
+            except Exception as e:
+                print(e)
+            
+            
     async def on_ready(self):
         
         # Sync the tree commands
@@ -81,6 +92,7 @@ class BotClient(Bot):
 """)
         print('> Loaded extensions --> ' + ', '.join(self.extensions.keys()))
         print('> Loaded persistent views --> ' + ', '.join(pview for pview in views_added))
+        print('> Loaded context menus --> ' + ', '.join(ctx.callback.__qualname__ for ctx in self.tree.walk_commands(guild=discord.Object(id=Config.SERVER_ID), type=discord.AppCommandType.message)))
         print('> Number of games loaded --> ' + str(len(self.games)))
 
 def run_discord_client():
