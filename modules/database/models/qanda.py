@@ -1,7 +1,7 @@
 import pymongo
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 from beanie import Document, Link, Indexed
 from beanie.odm.operators.find.evaluation import Text
@@ -10,7 +10,7 @@ from .member import MemberModel
 
 
 class GameShortView(BaseModel):
-    game: str
+    game: Union[str, None]
 
 class SearchShortView(BaseModel):
     title: str
