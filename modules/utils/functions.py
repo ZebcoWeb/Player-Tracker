@@ -93,15 +93,17 @@ def small_letter(text: str) -> str:
     return string
 
 
-def load_extentions(client):
+async def load_extentions(client):
         for path, subdirs, files in os.walk('cogs/'):
             for name in files:
                 if name.endswith('.py'):
                     filename = os.path.join(path, name).replace('/', '.').replace('\\', '.')[:-3]
-                    try:
-                        client.load_extension(filename)
-                    except:
-                        pass
+                    if filename not in Config.IGNORE_EXTENTIONS:
+                        try:
+                            await client.load_extension(filename)
+                        except Exception as e:
+                            print(f'Failed to load extension {filename}.')
+                            print(e)
 
 def inspect_models():
     models = []
@@ -158,3 +160,9 @@ def strfdelta(tdelta, fmt):
     d["M"], d["S"] = divmod(rem, 60)
     t = DeltaTemplate(fmt)
     return t.substitute(**d)
+
+def smart_truncate(content, length=100, suffix='...'):
+    if len(content) <= length:
+        return content
+    else:
+        return ' '.join(content[:length+1].split(' ')[0:-1]) + suffix

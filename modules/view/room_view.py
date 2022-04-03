@@ -4,11 +4,13 @@ from turtle import position
 
 import discord
 from discord import ButtonStyle, Client, Colour
+from beanie.odm.operators.update.general import Set, Inc
+from beanie.odm.operators.update.array import AddToSet
 
 import data.contexts as C
 from data.config import Category, Channel, Config, Emoji, Role
 from modules.database import GameModel, MemberModel, RoomModel
-from modules.utils import small_letter, set_level, had_room, is_ban
+from modules.utils import small_letter, set_level, had_room, is_ban_view
 
 from .view import PersistentView
 
@@ -18,7 +20,7 @@ __all__ = ['CreateRoomView']
 class CreateRoomView(PersistentView):
 
     @had_room
-    @is_ban
+    @is_ban_view
     @discord.ui.button(label='Create Room', custom_id='create_room_button', style=ButtonStyle.green, emoji=Emoji.CREATE_CIRCLE_TONE)
     async def choose_lang(self, button: discord.ui.Button, interaction: discord.Interaction):
 
@@ -29,7 +31,7 @@ class CreateRoomView(PersistentView):
         member_model = await MemberModel.find_one({'member_id': user.id})
 
         if new_room_category:
-            channel_name = 'new-' + user.name.lower()
+            channel_name = 'room-' + user.name.lower()
             
             overwrites = {
                 guild.default_role: discord.PermissionOverwrite(read_messages=False),
@@ -542,6 +544,13 @@ class RoomConfirmButton(discord.ui.Button):
             embed=emt,
         )
         room_model.tracker_msg_id = tracker_msg.id
+
+        await MemberModel.find_one(MemberModel.member_id == room_model.creator.member_id).update(
+            Inc({MemberModel.room_create_value: 1}),
+            Set({MemberModel.latest_game_played: room_model.game}),
+            # AddToSet({MemberModel.games_played: room_model.game}),
+        )
+
         await room_model.save() #! fix signal & delete role
 
         if room_model.mode == 'public':

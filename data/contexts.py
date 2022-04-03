@@ -3,7 +3,7 @@
 CONTEXT_LANG = {
     'title': 'Select your language', 
     'des': '- Choose your language from the **__%s__** available languages. Your desired language will be applied to other players joining your room.', 
-    'icon_url': 'https://cdn.discordapp.com/attachments/912750358890160148/952301017553338398/lang.png',
+    'icon_url': 'https://media.discordapp.net/attachments/912750358890160148/955371143345360926/Padlock_perspective_matte.png',
 }
 
 CONTEXT_GAME = {

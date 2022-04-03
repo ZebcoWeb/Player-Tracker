@@ -1,12 +1,14 @@
 import inspect
 import sys
 
-from discord import Intents, __version__, InteractionResponse
+import discord
+from discord import Intents, __version__, app_commands
 from discord.ext.commands import Bot, when_mentioned_or
 
 from data.config import Config
 from modules.config import Env, init_database
 from modules.database.models import GameModel
+from modules.database.models.qanda import QandaModel
 from modules.utils import LogType, get_logger, load_extentions
 from modules.view import PersistentView
 
@@ -15,20 +17,30 @@ class BotClient(Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(
             help_command = None,
-            command_prefix = when_mentioned_or('!'),
+            command_prefix = when_mentioned_or('-'),
             Intents = Intents().all()
         )
         self.persistent_views_added = False
 
+    async def setup_hook(self) -> None:
+
+        # Set up the database and check the connection status
+        print('> Check the database connection...')
+        await init_database(loop=self.loop)
+
+        # Load extentions
+        print('> Loading extentions...')
+        await load_extentions(self)
+
     async def on_ready(self):
+        
+        # Sync the tree commands
+        await self.tree.sync(guild=discord.Object(id=Config.SERVER_ID))
 
         # Load all active games from database
         print('> Loading games...')
         self.games = await GameModel.active_games(ignore_cache=True)
-    
-         # Load extentions
-        print('> Loading extentions...')
-        load_extentions(self)
+        self.qanda_games = await QandaModel.games(ignore_cache=True)
 
         # Loading persistent views
         print('> Loading persistent views...')
@@ -40,11 +52,11 @@ class BotClient(Bot):
                 # Specials (Be sure to come with kwargs)
                 if name == 'CreateRoomView' or 'QandaView':
                     self.add_view(obj(client = self))
+                    views_added.append(name)
 
                 # Others
                 else:
                     self.add_view(obj())
-                    views_added.append(name)
 
         self.persistent_views_added = True
 
@@ -75,10 +87,6 @@ def run_discord_client():
 
     print('\n> Starting...')
     client = BotClient()
-
-    # Set up the database and check the connection status
-    print('> Check the database connection...')
-    client.loop.run_until_complete(init_database(loop=client.loop))
 
     # Run the client
     return client.run(Env.TOKEN) # Run Client

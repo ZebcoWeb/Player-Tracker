@@ -9,6 +9,25 @@ class Emoji:
     BIN_TONE = '<:twotone_delete_white_24dp:905866139031179365>'
     ARROW_FORWARD = '<:arrow_forwardd:870680930048671814>'
     ARROW_BACK = '<:arrow_backk:870680929868320809>'
+    CURSOR = '<:cursor:870683241764507708>'
+
+    UR = '<:ur:959358598037778492>'
+    DR = '<:dr:959358557160091648>'
+    HC = '<:hc:959355814517293056>'
+    VC = '<:vc:959355814798307348>'
+    CR = '<:cr:959355813917519893>'
+
+    # Qoutes Emojis
+    Q1 = '<:q_:959535651869585458>'
+    Q2 = '<:q2:959539988574392340>'
+    RS = '<:rs:959535650980368464>'
+    LS = '<:ls:959535651877965864>'
+    L = '<:l_:959535651051675729>'
+
+    RANK1 = '<:rank1:959360760134397992>'
+    RANK2 = '<:rank2:959360760671256586>'
+    RANK3 = '<:rank3:959383794580852746>'
+    RANK_OTHER = '<:rank_other:959360760599965737>'
 
     ENGLISH_FLAG = '<:usaflag:868206926171881583>'
     PERSIAN_FLAG = '<:iranflag:868206924032778350>'
@@ -41,6 +60,7 @@ class Config:
     LEVEL_INDEX_NUM = 6
 
     IGNORE_MODELS = []
+    IGNORE_EXTENTIONS = ['cogs.logs', 'cogs.moderation']
 
     ROOM_LANGS = (
         ('en', 'English', Emoji.ENGLISH_FLAG),
@@ -104,6 +124,7 @@ class Channel:
     JOIN_LOG = 920597444503433246
     LEAVE_LOG = 920598275969646592
     QA_CHANNEL = 866812639783288872
+    QUOTE = 952524810381033482
     
     DATE_STATS_VC = 952233403925790750
     ROOM_STATS_VC = 952232648686841906
@@ -122,3 +143,5 @@ class Assets:
     TASK_ICON = 'https://media.discordapp.net/attachments/912750358890160148/912752149270777936/task_icon.png'
     ADD_ICON = 'https://media.discordapp.net/attachments/912750358890160148/916057441274318868/plus-circle.png'
     LFG_BANNER = 'https://media.discordapp.net/attachments/912750358890160148/916059487234846830/lfp.png'
+    QUOTE_BANNER = 'https://media.discordapp.net/attachments/912750358890160148/959529389526253608/quote.png'
+    HELP_ICON = 'https://cdn.discordapp.com/attachments/912750358890160148/959078018716934164/help-circle.png'

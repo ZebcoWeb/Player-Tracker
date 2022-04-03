@@ -57,5 +57,5 @@ class Logs(commands.Cog):
             embed=em
         )
 
-def setup(client:commands.Bot):
-    client.add_cog(Logs(client))
+async def setup(client:commands.Bot):
+    await client.add_cog(Logs(client))

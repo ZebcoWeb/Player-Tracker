@@ -2,6 +2,6 @@ from discord.ext import commands
 from jishaku.cog import Jishaku
 
 
-def setup(client: commands.Bot):
-    
-    client.add_cog(Jishaku(bot=client))
+
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Jishaku(bot=bot))

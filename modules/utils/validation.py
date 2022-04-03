@@ -1,17 +1,17 @@
 import functools
 
-from discord import Interaction
+from discord import Interaction, app_commands
 from discord.ext.commands import check
 
 from modules.database.models import MemberModel, RoomModel
 from modules.utils import error_embed
 
 
-def is_ban(func):
+def is_ban_view(func):
     @functools.wraps(func)
     async def predicate(view , button, interaction, *args, **kwargs):
-        if interaction.user:
-            member_model = await MemberModel.find_one({'member_id': interaction.user.id})
+        member_model = await MemberModel.find_one({'member_id': interaction.user.id})
+        if member_model:
             if member_model.is_ban_forever:
                 await interaction.response.send_message(
                     embed=error_embed('You are banned from the platform forever.'),
@@ -24,6 +24,9 @@ def is_ban(func):
                 )
             else:
                 return await func(view, button, interaction, *args, **kwargs)
+        else:
+            pass
+            # TODO: Add a new member to the database
     return predicate
 
 
@@ -40,3 +43,26 @@ def had_room(func):
                     ephemeral=True
                 )
     return predicate
+
+
+def is_ban():
+    async def predicate(interaction: Interaction):
+        member_model = await MemberModel.find_one({'member_id': interaction.user.id})
+        if member_model:
+            if member_model.is_ban_forever:
+                await interaction.response.send_message(
+                    embed=error_embed('You are banned from the platform forever.'),
+                    ephemeral=True
+                )
+                return False
+            elif member_model.is_ban:
+                await interaction.response.send_message(
+                    embed= error_embed(f'You are banned on the platform for another `{member_model.ban_time_str}`, please wait until then.'),
+                    ephemeral=True
+                )
+                return False
+            else:
+                return True
+        else:
+            pass
+    return app_commands.check(predicate)

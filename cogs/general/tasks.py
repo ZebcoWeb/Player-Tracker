@@ -7,7 +7,7 @@ from data.config import Channel
 from modules.database.models import RoomModel
 
 
-class Stats(commands.Cog):
+class Tasks(commands.Cog):
     def __init__(self, client:commands.Bot):
         self.client = client
         self.room_stats_channel = self.client.get_channel(Channel.ROOM_STATS_VC)
@@ -17,12 +17,13 @@ class Stats(commands.Cog):
         self.update_room_stats.start()
 
 
-    @tasks.loop(hours=1)
+    # Task to update date stats
+    @tasks.loop(seconds=10)
     async def update_date_stats(self):
         try:
             now = datetime.datetime.now()
             day = now.day
-            date_str = datetime.datetime.strftime(now, '—  %b {}, %Y ').format(humanize.ordinal(day)) + '⛄'
+            date_str = datetime.datetime.strftime(now, '—  %b {}, %Y ').format(humanize.ordinal(day)) + '🪐'
 
             await self.date_stats_channel.edit(
                 name = date_str
@@ -30,7 +31,7 @@ class Stats(commands.Cog):
         except:
             pass
 
-
+    # Task to update room stats
     @tasks.loop(seconds=30)
     async def update_room_stats(self):
         try:
@@ -42,5 +43,5 @@ class Stats(commands.Cog):
             pass
 
 
-def setup(client:commands.Bot):
-    client.add_cog(Stats(client))
+async def setup(client:commands.Bot):
+    await client.add_cog(Tasks(client))

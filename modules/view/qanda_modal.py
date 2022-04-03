@@ -1,11 +1,11 @@
 import discord
 
 from datetime import datetime
-from discord.ui import InputText, Button
+from discord.ui import TextInput, Button
 
 from data.config import Channel, Emoji
 from modules.database.models import QandaModel, MemberModel
-from modules.utils import is_ban
+from modules.utils import is_ban, success_embed
 
 from .view import PersistentView
 
@@ -34,23 +34,25 @@ class QandaForm(discord.ui.Modal):
         self.client = client
         super().__init__(
             title="Enter new question",
-            custom_id="qanda_modal"
+            custom_id="qanda_modal",
+            timeout=200
         )
+        # self.interaction_check()
 
         self.add_item(
-            InputText(
-                style= discord.InputTextStyle.short,
+            TextInput(
+                style= discord.TextStyle.short,
                 label='Title',
                 placeholder="What's your gaming question? Be specific",
                 custom_id='qanda_title_input',
                 min_length = 5,
-                max_length = 60,
+                max_length = 100,
                 required = True,
             )
         )
         self.add_item(
-            InputText(
-                style= discord.InputTextStyle.short,
+            TextInput(
+                style= discord.TextStyle.short,
                 label='Game',
                 placeholder='Enter your game here...(optional)',
                 custom_id='qanda_game_input',
@@ -60,8 +62,8 @@ class QandaForm(discord.ui.Modal):
             )
         )
         self.add_item(
-            InputText(
-                style= discord.InputTextStyle.long,
+            TextInput(
+                style= discord.TextStyle.long,
                 label='Describe',
                 placeholder='Enter your question description here...',
                 custom_id='qanda_describe_input',
@@ -71,7 +73,7 @@ class QandaForm(discord.ui.Modal):
             )
         )
     
-    async def callback(self, interaction: discord.Interaction):
+    async def on_submit(self, interaction: discord.Interaction):
         title = discord.utils.get(self.children, custom_id='qanda_title_input').value
         game_child = discord.utils.find(lambda c: c.custom_id == 'qanda_game_input', self.children)
         game = game_child.value if game_child else None
@@ -88,7 +90,7 @@ class QandaForm(discord.ui.Modal):
         em.set_author(name='New Question!', icon_url=interaction.user.avatar.url)
         if game:
             em.add_field(name=f'\u200b', value=f'`🕹️` **{game}**\n\u200b')
-        em.set_footer(text=f'Created by {interaction.user.name}')
+        em.set_footer(text=f'Asked by {interaction.user.name}')
         question = await qanda_channel.send(embed=em, view=QandaView(self.client))
 
         thread = await question.create_thread(
@@ -102,10 +104,11 @@ class QandaForm(discord.ui.Modal):
         qanda_model = QandaModel(
             title=title,
             question=description,
+            search_query=f'{title} {description}',
             game=game if game else None,
             questioner=questioner,
             thread_id=thread.id,
             question_message_id=question.id,
         )
-        await qanda_model.save()
-        await interaction.response.send_message(f'Question created!', ephemeral=True)
+        await QandaModel.insert_one(qanda_model)
+        await interaction.response.send_message(embed=success_embed('Question created!'), ephemeral=True)

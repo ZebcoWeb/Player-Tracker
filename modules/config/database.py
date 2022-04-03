@@ -17,7 +17,7 @@ async def init_database(loop: asyncio.AbstractEventLoop = None):
         username=Env.DATABASE_USER,
         password=Env.DATABASE_PASSWORD,
         io_loop=loop,
-        connectTimeoutMS=15000 # 15 seconds
+        connectTimeoutMS=10000 # 10 seconds
     )
     
     try:
@@ -38,7 +38,6 @@ async def init_database(loop: asyncio.AbstractEventLoop = None):
             sys.exit(1)
 
     except Exception as e:
-
         print('> Could not connect to database!')
         print('> Exiting...')
         sys.exit(1)

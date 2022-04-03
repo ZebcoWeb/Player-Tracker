@@ -25,6 +25,7 @@ class MemberModel(Document):
     room_join_value: conint(ge=0) = 0
     wiki_usage_value: conint(ge=0) = 0
     support_usage_value: conint(ge=0) = 0
+    question_answered_count: conint(ge=0) = 0
     # TODO: create voice state handler
     total_play_time: conint(ge=0) = 0   # Based on minutes
     lang: constr(max_length=3) = 'en'
@@ -45,7 +46,7 @@ class MemberModel(Document):
     leaved_at: Optional[datetime]
     crated_at: datetime = Field(default_factory=datetime.utcnow)  # That means created at
 
-    daily_room_created: conint(ge=0) = 0                          # This field is reset every 24 hours 
+    # daily_room_created: conint(ge=0) = 0                          # This field is reset every 24 hours 
 
     class Collection:
         name = "members"
