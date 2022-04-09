@@ -6,7 +6,6 @@ class Emoji:
     CANCEL_CIRCLE_TONE = '<:twotone_cancel_white_24dp:902221842201346058>'
     CREATE_CIRCLE_TONE = '<:create_ticket:868207164106342460>'
     CLICK_MOUSE = '<:twotone_ads_click_white_24dp:921362708018896916>'
-    BIN_TONE = '<:twotone_delete_white_24dp:905866139031179365>'
     ARROW_FORWARD = '<:arrow_forwardd:870680930048671814>'
     ARROW_BACK = '<:arrow_backk:870680929868320809>'
     CURSOR = '<:cursor:870683241764507708>'
@@ -38,9 +37,12 @@ class Emoji:
 
     CIRCLE = '<:circle_w:951908235051413514>'
 
+    CHECK = '<:check:868207164001497158>'
+    CLOSE = '<:cancell:868207163582083083>'
+
     CONFIRM_TONE_ID = 868207164001497158
     AGAIN_TONE_ID = 868207163569471570
-    CABCEL_TONE_ID = 868207163582083083
+    CANCEL_TONE_ID = 868207163582083083
 
     QA_ID = 952239387503104060
     
@@ -60,7 +62,7 @@ class Config:
     LEVEL_INDEX_NUM = 6
 
     IGNORE_MODELS = []
-    IGNORE_EXTENTIONS = ['cogs.logs', 'cogs.moderation']
+    IGNORE_EXTENTIONS = ['cogs.logs', 'cogs.moderation', 'cogs.room']
 
     ROOM_LANGS = (
         ('en', 'English', Emoji.ENGLISH_FLAG),
@@ -125,6 +127,7 @@ class Channel:
     LEAVE_LOG = 920598275969646592
     QA_CHANNEL = 866812639783288872
     QUOTE = 952524810381033482
+    SUPPORT_NOTICE = 961335267506135091
     
     DATE_STATS_VC = 952233403925790750
     ROOM_STATS_VC = 952232648686841906
@@ -132,6 +135,7 @@ class Channel:
 class Category:
     ROOMS = 854646392197611534
     PLATFORM = 952108690654240838
+    TICKETS = 961996224540590131
     
 
 class Regex:
