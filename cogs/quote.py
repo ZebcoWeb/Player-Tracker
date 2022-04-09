@@ -108,7 +108,8 @@ class Quote(commands.Cog):
             banner_embed = discord.Embed(color=embed_color, type='image')
             banner_embed.set_image(url=Assets.QUOTE_BANNER)
 
-            await quote_channel.send(embeds=[banner_embed, quote_embed])
+            quote_message = await quote_channel.send(embeds=[banner_embed, quote_embed])
+            await quote_message.add_reaction('\U0001f5ff')
             quote.display_count += 1
             await quote.save()
 
