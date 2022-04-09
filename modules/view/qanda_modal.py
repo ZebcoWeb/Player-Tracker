@@ -37,7 +37,6 @@ class QandaForm(discord.ui.Modal):
             custom_id="qanda_modal",
             timeout=200
         )
-        # self.interaction_check()
 
         self.add_item(
             TextInput(
