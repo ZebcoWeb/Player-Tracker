@@ -1,9 +1,11 @@
 import os, sys, inspect, discord
+from typing import List
 
 from string import Template
 from datetime import datetime
 
 from discord.colour import Colour
+from discord.app_commands import CommandTree, ContextMenu
 from beanie import Document
 from pymongo import MongoClient
 
@@ -102,8 +104,16 @@ async def load_extentions(client):
                         try:
                             await client.load_extension(filename)
                         except Exception as e:
-                            print(f'Failed to load extension {filename}.')
+                            print(f'! Failed to load extension {filename}.')
                             print(e)
+
+def load_ctxs(tree: CommandTree, ctx_list: List[ContextMenu]):
+    for ctx in ctx_list:
+            try:
+                tree.add_command(ctx)
+            except Exception as e:
+                print(f'! Failed to load ctx {ctx.callback.__qualname__}.')
+                print(e)
 
 def inspect_models():
     models = []
