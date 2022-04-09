@@ -47,15 +47,18 @@ class Qanda(commands.Cog):
     
 
     # General commands
-    @is_ban()
     @ask.command(name='new', description = '🤔 Ask a new gaming question')
+    @app_commands.checks.cooldown(1, 10)
+    @is_ban()
     async def ask_new(self, interaction: discord.Interaction):
         await interaction.response.send_modal(QandaForm(self.client))
 
-    @is_ban()
+
     @ask.command(name='search', description='🤔 Search for a question')
     @app_commands.autocomplete(query=qanda_search_autocomplete)
     @app_commands.describe(query='Search query...')
+    @app_commands.checks.cooldown(1, 15)
+    @is_ban()
     async def ask_search(
         self, 
         interaction: discord.Interaction,
@@ -71,20 +74,26 @@ class Qanda(commands.Cog):
 
         if result:
             status = '✅' if result.is_answered else '❔'
-            em = discord.Embed(title=f'{status} {query}', description=result.question, color=Config.BRAND_COLOR)
+            em = discord.Embed(
+                title=f'{status} {query}', 
+                description=result.question, 
+                color=Config.BRAND_COLOR
+            )
+            if result.is_answered:
+                em.description += f'\n\n**Answer:**\n>>> *{smart_truncate(result.answer, length=350)}*'
             em.set_author(name='🔎 Search results for:')
             em.set_footer(text=f"Ask new question with /ask new", icon_url=Assets.LOGO_PURPLE_MINI)
-            # em.add_field(name='Answer', value=result.answer)
-            # <:text:959194994944659496>⠀⠀<:gamepad:959104522058362880>⠀{i.game}⠀⠀<:comments:959104521655701535>⠀{answers_count}⠀⠀<:user:959104521844428830>⠀
+            em.add_field(name='\u200b', value=f'[⤵️ Jump to question](https://discord.com/channels/{Config.SERVER_ID}/{Channel.QA_CHANNEL}/{result.question_message_id})\n\u200b')
 
             await interaction.response.send_message(embed=em)
         else:
             await interaction.response.send_message(embed=error_embed(title='No results found'))
 
-    @is_ban()
-    @ask.command(name='list', description='🤔 List latest questions')
+    @ask.command(name='list', description='🤔 List latest questions') #! Fix this
     @app_commands.autocomplete(game=qanda_games_autocomplete)
     @app_commands.describe(game='Enter game for list filter (Optional)')
+    @app_commands.checks.cooldown(1, 15)
+    @is_ban()
     async def ask_list(
         self,
         interaction: discord.Interaction,
@@ -95,7 +104,6 @@ class Qanda(commands.Cog):
             query['game'] = game
 
         result = await QandaModel.find(query, fetch_links=True).sort('-created_at').limit(25).to_list()
-
         if not result:
             if game:
                 await interaction.response.send_message(embed=error_embed(f"No questions found for {game}"))
@@ -105,7 +113,6 @@ class Qanda(commands.Cog):
             em.description = ''
             em.set_footer(text=f"Ask new question with /ask new", icon_url=Assets.LOGO_PURPLE_MINI)
             
-
             embeds = []
             item_counter = 0
             loop_counter = 0
@@ -124,11 +131,13 @@ class Qanda(commands.Cog):
                 elif loop_counter == len(result):
                     embeds.append(item_embed)
 
+            print(embeds)
             paginate = Paginator(timeout=600, client=self.client)
             await paginate.start(interaction, embeds)
 
-    @is_ban()
     @ask.command(name='top', description='🤔 List of top respondents')
+    @app_commands.checks.cooldown(1, 10)
+    @is_ban()
     async def top_list(
         self,         
         interaction: discord.Interaction
@@ -182,7 +191,7 @@ class Qanda(commands.Cog):
     async def qanda_choose_answer(self, interaction: discord.Interaction, message: discord.Message):
         if message.channel.type == discord.ChannelType.public_thread and message.channel.parent_id == Channel.QA_CHANNEL:
             qanda_model = await QandaModel.find_one(QandaModel.thread_id == message.channel.id, fetch_links=True)
-            if qanda_model and not qanda_model.is_answered and qanda_model.questioner.member_id == interaction.user.id:
+            if qanda_model and qanda_model.questioner.member_id == interaction.user.id:
                 
                 # Reply the best answer
                 answer_reply = discord.Embed(description=f'✅ Accepted answer', color=discord.Color.green())
@@ -208,8 +217,8 @@ class Qanda(commands.Cog):
 
         await interaction.response.defer(thinking=False)
 
-    # Moderator commands
 
+    # Moderator commands
     @ask.command(name='delete', description='🤔 Delete a question (moderator only)')
     @app_commands.describe(question_id='Question Message ID')
     @app_commands.checks.has_permissions(manage_channels=True)
@@ -237,6 +246,18 @@ class Qanda(commands.Cog):
                 await interaction.response.send_message(embed=error_embed(f'Question already deleted'), ephemeral=True)
         else:
             await interaction.response.send_message(embed=error_embed('Question not found'), ephemeral=True)
+
+    
+    @ask_new.error
+    @ask_search.error
+    @ask_list.error
+    @top_list.error
+    async def on_commands_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, app_commands.CommandOnCooldown):
+            await interaction.response.send_message(
+                embed=error_embed(f'You are on cooldown for `{round(error.retry_after, 2)}` seconds'), 
+                ephemeral=True
+            )
 
 async def setup(client: commands.Bot):
     await client.add_cog(Qanda(client))
