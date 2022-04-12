@@ -1,20 +1,19 @@
+import discord
+
 from datetime import datetime
 from typing import List, Optional
-
 from beanie import Document, Indexed, Link
-from discord import Client
-from pydantic import Field, conint, constr
+from pydantic import Field, conint, constr, BaseModel
 from pymongo import TEXT
 
-from data.config import Config
 from modules.utils import strfdelta
+from data.config import Role
 
 from .game import GameModel
 from .wiki import WikiModel
 
-# from modules.utils import LogType, get_logger
-
-
+class MemberShort(BaseModel):
+    member_id: int
 
 class MemberModel(Document):
 
@@ -36,17 +35,16 @@ class MemberModel(Document):
 
     is_staff: bool = False
     is_owner: bool = False
-    is_robot: bool = False
     is_power: bool = True
     is_power_plus: bool = False
     is_ban_forever: bool = False
     is_leaved: bool = False
 
-    ban_time: Optional[datetime]
     leaved_at: Optional[datetime]
+    ban_time: Optional[datetime]
     crated_at: datetime = Field(default_factory=datetime.utcnow)  # That means created at
 
-    # daily_room_created: conint(ge=0) = 0                          # This field is reset every 24 hours 
+    daily_room_created: conint(ge=0) = 0       # This field is reset every 24 hours 
 
     class Collection:
         name = "members"
@@ -80,9 +78,38 @@ class MemberModel(Document):
     @property
     def is_use_wiki(self):
         return True if self.wiki_usage_value != 0 else False
+
+    @staticmethod
+    async def join_member(member: discord.Member):
+        if not member.bot:
+            member_model = await MemberModel.find_one(MemberModel.member_id == member.id)
+            if not member_model:
+                member_model = MemberModel(
+                    member_id = member.id,
+                    latest_discord_id = member.name,
+                    is_robot= True if member.bot else False
+                )
+                await member_model.save()
+            else:
+                member_model.is_leaved = False
+                member_model.leaved_at = None
+                await member_model.save()
+
+            if member_model.is_power_plus:
+                await member.add_roles(discord.Object(id=Role.POWER_PLUS))
+            elif member_model.is_power:
+                await member.add_roles(discord.Object(id=Role.POWER))
     
-
-    async def fetch_member(self, client: Client):
-        guild = await client.fetch_guild(Config.SERVER_ID)
-
-        return await guild.fetch_member(self.member_id)
+    @staticmethod
+    async def leave_member(member: discord.Member):
+        if not member.bot:
+            member_model = await MemberModel.find_one(MemberModel.member_id == member.id)
+            if member_model:
+                member_model.is_leaved = True
+                member_model.leaved_at = datetime.now()
+                await member_model.save()
+    
+    @staticmethod
+    async def members_id_list():
+        query = await MemberModel.find({}).project(MemberShort).to_list()
+        return [member.member_id for member in query]

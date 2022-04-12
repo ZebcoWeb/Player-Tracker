@@ -5,8 +5,6 @@ from discord.ui import TextInput
 from data.config import Category, Role, Emoji
 from modules.utils import success_embed
 from modules.database import MemberModel
-
-
     
 
 class ContactUsForm(discord.ui.Modal):
@@ -41,6 +39,7 @@ class ContactUsForm(discord.ui.Modal):
             )
         )
     
+
     async def on_submit(self, interaction: discord.Interaction):
         subject = discord.utils.get(self.children, custom_id='contact_us_subject_input').value
         message = discord.utils.get(self.children, custom_id='contact_us_message_input').value
@@ -66,7 +65,7 @@ class ContactUsForm(discord.ui.Modal):
             description=f'*{message}*\n\u200b',
             color=discord.Color.blue()
         )
-        em.set_thumbnail(url=user.avatar.url)
+        em.set_thumbnail(url=user.display_avatar.url)
         await ticket_channel.send(embed=em, content=f'{user.mention}')
 
         await interaction.response.send_message(

@@ -32,7 +32,7 @@ def is_ban_view(func):
 
 def had_room(func):
     @functools.wraps(func)
-    async def predicate(view , button, interaction, *args, **kwargs):
+    async def predicate(view , interaction, button, *args, **kwargs):
         if interaction.user:
             user_room = await RoomModel.find_one(RoomModel.creator.member_id == interaction.user.id)
             if not user_room:

@@ -44,8 +44,8 @@ class QandaModel(Document):
     
     @staticmethod
     async def games(ignore_cache: bool = False) -> list:
-        query = await QandaModel.find({"is_active": True}, ignore_cache=ignore_cache).project(GameShortView).to_list()
-        return list(set([game.game for game in query]))
+        query = await QandaModel.find(QandaModel.is_active == True, ignore_cache=ignore_cache).project(GameShortView).to_list()
+        return list(set([game.game for game in query if game is not None]))
 
 
     @staticmethod

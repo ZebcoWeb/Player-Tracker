@@ -1,5 +1,5 @@
-import inspect
 import sys
+import inspect
 
 import discord
 from discord import Intents, __version__
@@ -9,16 +9,17 @@ from data.config import Config
 from modules.config import Env, init_database
 from modules.database.models import GameModel
 from modules.database.models.qanda import QandaModel
-from modules.utils import LogType, get_logger, load_extentions, load_ctxs
+from modules.utils import load_extentions, load_ctxs
 from modules.view import PersistentView
+
 
 
 class BotClient(Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(
             help_command = None,
-            command_prefix = when_mentioned_or('-'),
-            Intents = Intents().all()
+            command_prefix = when_mentioned_or('!'),
+            intents=Intents.all()
         )
         self.persistent_views_added = False
 
@@ -101,6 +102,8 @@ def run_discord_client():
 
 if __name__ == '__main__':
     run_discord_client()
+
+
 
 
 # سلطان کد زنی نامنظم

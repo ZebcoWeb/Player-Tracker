@@ -1,11 +1,9 @@
 import asyncio
 import random
-from turtle import position
 
 import discord
 from discord import ButtonStyle, Client, Colour
 from beanie.odm.operators.update.general import Set, Inc
-from beanie.odm.operators.update.array import AddToSet
 
 import data.contexts as C
 from data.config import Category, Channel, Config, Emoji, Role
@@ -14,14 +12,26 @@ from modules.utils import small_letter, set_level, had_room, is_ban_view
 
 from .view import PersistentView
 
-__all__ = ['CreateRoomView']
+__all__ = ['CreateRoomView', 'RoomPlayerCountButton']
 
+
+class RoomPlayerCountButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(
+            label='0 Players',
+            style = ButtonStyle.blurple,
+            custom_id='player_count_button',
+            emoji=discord.PartialEmoji.from_str(Emoji.USERS)
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
 
 class CreateRoomView(PersistentView):
 
     @had_room
     @is_ban_view
-    @discord.ui.button(label='Create Room', custom_id='create_room_button', style=ButtonStyle.green, emoji=Emoji.CREATE_CIRCLE_TONE)
+    @discord.ui.button(label='ㅤCreate Roomㅤ', custom_id='create_room_button', style=ButtonStyle.green, emoji=Emoji.CREATE_CIRCLE)
     async def choose_lang(self, button: discord.ui.Button, interaction: discord.Interaction):
 
         new_room_category: discord.CategoryChannel = self.client.get_channel(Category.PLATFORM)
@@ -103,9 +113,9 @@ class CreateRoomChooseLang(discord.ui.View):
         )
 
     @discord.ui.select(placeholder='Choose your room speaking language...', custom_id='choose_langs_select', options = options)
-    async def choose_lang(self, select: discord.ui.Select, interaction: discord.Interaction):
+    async def choose_lang(self, interaction: discord.Interaction, select):
         
-        self.lang = select.values[0]
+        self.lang = interaction.data['values'][0]
 
         next_button: discord.ui.Button = discord.utils.get(
             self.children, custom_id='choose_next_lang_button'
@@ -126,7 +136,7 @@ class CreateRoomChooseLang(discord.ui.View):
         await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label='ㅤNextㅤ', custom_id='choose_next_lang_button',disabled=True ,style=ButtonStyle.green, emoji=Emoji.ARROW_FORWARD)
-    async def choose_lang_next(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def choose_lang_next(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.lang:
             em = discord.Embed(
                 description= C.CONTEXT_GAME['des'] % (len(self.client.games)),

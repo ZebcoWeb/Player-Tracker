@@ -15,12 +15,14 @@ class ContactUs(commands.Cog):
         self.client = client
 
     @app_commands.command(name='contact', description='💬 Contact us')
+    @app_commands.guilds(Config.SERVER_ID)
     async def contact_us(self, interaction: discord.Interaction):
         await interaction.response.send_modal(ContactUsForm(self.client))
 
 
     @app_commands.command(name='close', description='Close ticket')
     @app_commands.describe(channel='Channel to close the ticket (Optional)')
+    @app_commands.checks.has_permissions(manage_channels=True)
     async def contact_us(self, interaction: discord.Interaction, channel: discord.TextChannel = None):
         if channel is None:
             channel = interaction.channel

@@ -2,10 +2,9 @@ import copy
 import discord
 
 from typing import List
-from discord import Color, app_commands
+from discord import app_commands
 from discord.ext import commands
 from discord.app_commands import Group, ContextMenu
-from beanie.odm.operators.find.evaluation import Text
 
 from data.config import Channel, Config, Assets, Emoji
 from modules.utils.validation import is_ban
@@ -19,7 +18,6 @@ class Qanda(commands.Cog):
         self.client.ctx_menus.append(
             ContextMenu(name='🤔 Best Answer', callback=self.qanda_choose_answer, guild_ids=[Config.SERVER_ID])
         )
-        
 
     # Commands Group
     ask = Group(name="ask", description="🤔 Q&A commands", guild_ids=[Config.SERVER_ID])
@@ -135,6 +133,7 @@ class Qanda(commands.Cog):
             paginate = Paginator(timeout=600, client=self.client)
             await paginate.start(interaction, embeds)
 
+
     @ask.command(name='top', description='🤔 List of top respondents')
     @app_commands.checks.cooldown(1, 10)
     @is_ban()
@@ -178,7 +177,7 @@ class Qanda(commands.Cog):
 
                 item_counter += 1
                 loop_counter += 1
-                if item_counter == 10:
+                if item_counter == 5:
                     embeds.append(item_embed)
                     item_counter = 0
                     item_embed = copy.deepcopy(em)

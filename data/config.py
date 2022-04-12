@@ -4,11 +4,12 @@ from discord import ButtonStyle
 class Emoji:
     CHECK_CIRCLE_TONE = '<:twotone_check_circle_white_24dp:902221842188734475'
     CANCEL_CIRCLE_TONE = '<:twotone_cancel_white_24dp:902221842201346058>'
-    CREATE_CIRCLE_TONE = '<:create_ticket:868207164106342460>'
+    CREATE_CIRCLE = '<:create:962744330865496065>'
     CLICK_MOUSE = '<:twotone_ads_click_white_24dp:921362708018896916>'
     ARROW_FORWARD = '<:arrow_forwardd:870680930048671814>'
     ARROW_BACK = '<:arrow_backk:870680929868320809>'
-    CURSOR = '<:cursor:870683241764507708>'
+    CURSOR = '<:cursor:962641472061063168>'
+    USERS = '<:users:962779152895848498>'
 
     UR = '<:ur:959358598037778492>'
     DR = '<:dr:959358557160091648>'
@@ -62,7 +63,7 @@ class Config:
     LEVEL_INDEX_NUM = 6
 
     IGNORE_MODELS = []
-    IGNORE_EXTENTIONS = ['cogs.logs', 'cogs.moderation', 'cogs.room']
+    IGNORE_EXTENTIONS = ['cogs.logs', 'cogs.moderation']
 
     ROOM_LANGS = (
         ('en', 'English', Emoji.ENGLISH_FLAG),
@@ -114,17 +115,18 @@ class Todoist:
     LABEL_HIGH = 2158970439
 
 class Role:
+    POWER = 863414941033299979
+    POWER_PLUS = 863452195555115079
     RAM = 863452008345894912
     PLAYING_NOW = 864099429211439134
 
 
 class Channel:
-    TASK_SYSTEM = 866603888559652894
-    CREATE_ROOM = 855195507281494056
+    CREATE_ROOM = 962715094813380689
     RADIO_NEWS = 894256920255414393
     TRACKER_CHANNELS = [855199840099106847, 855354597459623957]
     JOIN_LOG = 920597444503433246
-    LEAVE_LOG = 920598275969646592
+    LEAVE_LOG = 963302467850883092
     QA_CHANNEL = 866812639783288872
     QUOTE = 952524810381033482
     SUPPORT_NOTICE = 961335267506135091
@@ -146,6 +148,6 @@ class Assets:
     LOGO_PURPLE_MINI = 'https://media.discordapp.net/attachments/912750358890160148/912752149090435152/logo_purple.png?width=50&height=49'
     TASK_ICON = 'https://media.discordapp.net/attachments/912750358890160148/912752149270777936/task_icon.png'
     ADD_ICON = 'https://media.discordapp.net/attachments/912750358890160148/916057441274318868/plus-circle.png'
-    LFG_BANNER = 'https://media.discordapp.net/attachments/912750358890160148/916059487234846830/lfp.png'
+    LFP_BANNER = 'https://media.discordapp.net/attachments/912750358890160148/916059487234846830/lfp.png'
     QUOTE_BANNER = 'https://media.discordapp.net/attachments/912750358890160148/959529389526253608/quote.png'
     HELP_ICON = 'https://cdn.discordapp.com/attachments/912750358890160148/959078018716934164/help-circle.png'

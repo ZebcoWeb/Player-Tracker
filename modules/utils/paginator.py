@@ -1,5 +1,3 @@
-from http import client
-from tkinter import E
 import discord
 from discord.ext import commands
 
@@ -30,8 +28,8 @@ class Paginator(discord.ui.View):
         InitialPage: int = 0
     ) -> None:
         self.client = client
-        self.PreviousButton = discord.ui.Button(emoji=self.client.get_emoji(870680929868320809), style=discord.ButtonStyle.green)
-        self.NextButton = discord.ui.Button(emoji=self.client.get_emoji(870680930048671814), style=discord.ButtonStyle.green)
+        self.PreviousButton = discord.ui.Button(emoji=discord.PartialEmoji.from_str(Emoji.ARROW_BACK), style=discord.ButtonStyle.green)
+        self.NextButton = discord.ui.Button(emoji=discord.PartialEmoji.from_str(Emoji.ARROW_FORWARD), style=discord.ButtonStyle.green)
         self.PageCounterStyle = discord.ButtonStyle.blurple
         self.InitialPage = InitialPage
 
@@ -100,4 +98,7 @@ class Paginator(discord.ui.View):
 
 class SimplePaginatorPageCounter(discord.ui.Button):
     def __init__(self, style: discord.ButtonStyle, client: discord.Client, TotalPages, InitialPage):
-        super().__init__(label=f"{InitialPage + 1}/{TotalPages}", style=style, disabled=True, emoji=client.get_emoji(870683241764507708))
+        super().__init__(label=f"{InitialPage + 1}/{TotalPages}", style=style, emoji=discord.PartialEmoji.from_str(Emoji.CURSOR))
+    
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()

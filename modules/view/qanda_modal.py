@@ -24,7 +24,6 @@ class QandaView(PersistentView):
         self.add_item(button)
         button.callback = self.submit_button
 
-    # @is_ban #Todo: fix that
     async def submit_button(self, interaction: discord.Interaction):
         await interaction.response.send_modal(QandaForm(self.client))
 
@@ -88,7 +87,7 @@ class QandaForm(discord.ui.Modal):
         )
         em.set_author(name='New Question!', icon_url=interaction.user.avatar.url)
         if game:
-            em.add_field(name=f'\u200b', value=f'`🕹️` **{game}**\n\u200b')
+            em.add_field(name=f'\u200b', value=f'> `🕹️` **{game}**\n\u200b')
         em.set_footer(text=f'Asked by {interaction.user.name}')
         question = await qanda_channel.send(embed=em, view=QandaView(self.client))
 
