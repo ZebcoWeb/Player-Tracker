@@ -1,12 +1,12 @@
 import discord
 import copy
 
-from discord.app_commands import Group
+from discord.app_commands import Group, ContextMenu
 from discord.ext import commands
 from discord import app_commands
 
 from data.config import Config, Channel, Assets
-from modules.view import CreateRoomView, RoomPlayerCountButton
+from modules.view import CreateRoomView, RoomPlayerCountButton, RoomSendInvite
 from modules.utils import error_embed, success_embed
 from modules.database import RoomModel
 
@@ -16,8 +16,12 @@ class Room(commands.Cog):
         self.client = client
         self.room_context = None
         self.view = None
+        self.client.ctx_menus.append(
+            ContextMenu(name='📩 Send room invite', callback=self.send_room_invite_url, guild_ids=[Config.SERVER_ID])
+        )
 
         self.client.loop.create_task(self.send_room_context())
+
 
     room = Group(name='room', description='Room commands', guild_ids=[Config.SERVER_ID])
     
@@ -62,7 +66,7 @@ class Room(commands.Cog):
         if room_model:
             try:
                 text_channel = await self.client.fetch_channel(room_model.room_create_channel_id)
-                vc_chanel = await self.client.fetch_channel(room_model.room_voice_channel_id)
+                vc_chanel = await self.client.fetch_channel(room_id)
                 await text_channel.delete()
                 await vc_chanel.delete()
             except:
@@ -113,6 +117,51 @@ class Room(commands.Cog):
                 elif before.channel:
                     self.reduce_player_count_number()
                 await self.room_context.edit(view=self.view)
+    
+
+
+    async def send_room_invite_url(self, interaction: discord.Interaction, user: discord.Member):
+        room_model = await RoomModel.find(RoomModel.creator.member_id == interaction.user.id, fetch_links=True).to_list()
+        room_model = room_model[0]
+        if room_model:
+            if not user.bot:
+                if interaction.user != user:
+                    try:
+                        em = discord.Embed(
+                            title=f'📩 {interaction.user.name}#{interaction.user.discriminator} invited you to a new game room',
+                            description= f'\nPlayer **{interaction.user.name}** has invited you to a game room. If he/she is your **friend**, it is better not to reject the request 🤨',
+                            color=Config.BRAND_COLOR
+                        )
+                        em.set_thumbnail(url=interaction.user.display_avatar.url)
+                        em.set_footer(text=f'Player Tracker', icon_url=Assets.LOGO_PURPLE_MINI)
+                        await user.send(embed=em, view=RoomSendInvite(client=self.client, room_model=room_model))
+                        await interaction.response.send_message(
+                            embed=success_embed(f'Invite URL successfully sent to {user.mention}'),
+                            ephemeral=True,
+                        )
+                    except discord.HTTPException:
+                        await interaction.response.send_message(
+                            embed=error_embed(f'{user.mention} is not accepting direct messages. please let him/her know about this problem and try again.'),
+                            ephemeral=True,
+                        )
+                else:
+                    await interaction.response.send_message(
+                        embed=error_embed(f'You can\'t invite yourself to a room. wtf...'),
+                        ephemeral=True,
+                    )
+            else:
+                await interaction.response.send_message(
+                    embed=error_embed('You can\'t invite bots to your room'),
+                    ephemeral=True,
+                )
+        else:
+            await interaction.response.send_message(
+                embed=error_embed(f'You don\'t have any rooms right now'),
+                ephemeral=True,
+            )
+
+
+    
 
 
 async def setup(client:commands.Bot):

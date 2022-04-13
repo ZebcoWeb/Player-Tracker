@@ -8,11 +8,51 @@ from beanie.odm.operators.update.general import Set, Inc
 import data.contexts as C
 from data.config import Category, Channel, Config, Emoji, Role
 from modules.database import GameModel, MemberModel, RoomModel
-from modules.utils import small_letter, set_level, had_room, is_ban_view
+from modules.utils import small_letter, set_level, had_room, is_ban_view, success_embed, error_embed
 
 from .view import PersistentView
 
-__all__ = ['CreateRoomView', 'RoomPlayerCountButton']
+__all__ = ['CreateRoomView', 'RoomPlayerCountButton', 'RoomSendInvite']
+
+
+class RoomSendInvite(discord.ui.View):
+    def __init__(self, client: Client, room_model: RoomModel):
+        self.client = client
+        self.room_model = room_model
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label='ㅤㅤAcceptㅤㅤ', style=ButtonStyle.green)
+    async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
+        vc_room = await self.client.fetch_channel(self.room_model.room_voice_channel_id)
+        overwrites = vc_room.overwrites
+        overwrites[interaction.user] = discord.PermissionOverwrite(connect=True, view_channel=True)
+        await vc_room.edit(overwrites=overwrites)
+        em = discord.Embed(
+            description=f'{Emoji.ARROW_FORWARD} Your invite URL: {self.room_model.invite_url}',
+            colour=Colour.green()
+        )
+        await interaction.response.send_message(embed=em)
+        
+        room_text_channel = await self.client.fetch_channel(self.room_model.room_create_channel_id)
+        await room_text_channel.send(
+            content=f'<@{self.room_model.creator.member_id}>',
+            embed=success_embed(f'{interaction.user.mention} accepted your invite.')
+        )
+    
+    @discord.ui.button(label='ㅤRejectㅤ', style=ButtonStyle.red)
+    async def reject(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.message.edit(
+            view=None
+        )
+        await interaction.response.send_message(
+            embed=success_embed(f'Your invite has been rejected.')
+        )
+
+        room_text_channel = await self.client.fetch_channel(self.room_model.room_create_channel_id)
+        await room_text_channel.send(
+            content=f'<@{self.room_model.creator.member_id}>',
+            embed=error_embed(f'{interaction.user.mention} rejected your invite.')
+        )
 
 
 class RoomPlayerCountButton(discord.ui.Button):
@@ -488,7 +528,7 @@ class RoomConfirmButton(discord.ui.Button):
         room_model: RoomModel = self.view.room_model
         client: discord.Client = self.view.client
         guild = interaction.guild
-        user = await room_model.creator.fetch_member(client)
+        user = await guild.fetch_member(room_model.creator.member_id)
         ram_role = guild.get_role(Role.RAM)
 
         category_room: discord.CategoryChannel = await client.fetch_channel(Category.ROOMS)
@@ -500,9 +540,9 @@ class RoomConfirmButton(discord.ui.Button):
 
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=mode, create_instant_invite=mode),
-            guild.me: discord.PermissionOverwrite(view_channel=True),
-            ram_role: discord.PermissionOverwrite(read_messages=True, send_messages=False, manage_messages=True),
-            user: discord.PermissionOverwrite(view_channel=True, connect=True)
+            guild.me: discord.PermissionOverwrite(manage_channels=True),
+            ram_role: discord.PermissionOverwrite(manage_channels=False, manage_permissions=True, connect=True, deafen_members=True, mute_members=True, move_members=True),
+            user: discord.PermissionOverwrite(view_channel=True, connect=True, deafen_members=True, mute_members=True, priority_speaker=True)
         }
 
         if room_model.capacity == 2:
@@ -530,7 +570,18 @@ class RoomConfirmButton(discord.ui.Button):
 
         if room_model.mode == 'public':
             invite = await vc_room.create_invite()
+            
             room_model.invite_url = invite.url
+            room_model.tracker_channel_id = random.choice(Channel.TRACKER_CHANNELS)
+            tracker_channel = client.get_channel(room_model.tracker_channel_id)
+            emt = discord.Embed(
+                description=f'{room_model.invite_url}',
+                color=random.choice(Config.COLORS),
+            )
+            tracker_msg = await tracker_channel.send(
+                embed=emt,
+            )
+            room_model.tracker_msg_id = tracker_msg.id
 
         elif room_model.mode == 'private':
 
@@ -543,22 +594,10 @@ class RoomConfirmButton(discord.ui.Button):
 
             room_model.invite_url = invite.url
 
-        room_model.tracker_channel_id = random.choice(Channel.TRACKER_CHANNELS)
-
-        tracker_channel = client.get_channel(room_model.tracker_channel_id)
-        emt = discord.Embed(
-            description=f'{room_model.invite_url}',
-            color=random.choice(Config.COLORS),
-        )
-        tracker_msg = await tracker_channel.send(
-            embed=emt,
-        )
-        room_model.tracker_msg_id = tracker_msg.id
 
         await MemberModel.find_one(MemberModel.member_id == room_model.creator.member_id).update(
             Inc({MemberModel.room_create_value: 1}),
             Set({MemberModel.latest_game_played: room_model.game}),
-            # AddToSet({MemberModel.games_played: room_model.game}),
         )
 
         await room_model.save() #! fix signal & delete role
