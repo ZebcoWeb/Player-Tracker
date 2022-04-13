@@ -105,7 +105,7 @@ async def load_extentions(client):
                             await client.load_extension(filename)
                         except Exception as e:
                             print(f'! Failed to load extension {filename}.')
-                            print(e)
+                            raise e
 
 def load_ctxs(tree: CommandTree, ctx_list: List[ContextMenu]):
     for ctx in ctx_list:

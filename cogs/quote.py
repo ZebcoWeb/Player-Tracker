@@ -96,8 +96,8 @@ class Quote(commands.Cog):
             embed_color = Config.COLOR_DISCORD
 
             description = ''
-            description += f'{Emoji.RS + Emoji.Q1 + Emoji.LS + (Emoji.L * 13)}\n'
-            description += f'*{quote.quote}*\n'
+            description += f'{Emoji.RS + Emoji.Q1 + Emoji.LS + (Emoji.L * 13)}\n\n'
+            description += f'*{quote.quote}*\n\n'
             description += f'{(Emoji.L * 13) + Emoji.RS + Emoji.Q2 + Emoji.LS}\n\nㅤㅤ{Emoji.CIRCLE} From **{quote.game}** game\n'
 
             quote_embed = discord.Embed(

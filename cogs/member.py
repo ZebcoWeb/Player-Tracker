@@ -12,6 +12,8 @@ class Member(commands.Cog):
         self.client = client
         self.client.loop.create_task(self.leftover_members())
 
+
+
     async def leftover_members(self):
         guild = await self.client.fetch_guild(Config.SERVER_ID)
         registered_members = await MemberModel.members_id_list()
@@ -19,7 +21,7 @@ class Member(commands.Cog):
             if member.id not in registered_members:
                 await MemberModel.join_member(member)
 
-
+    # Event listeners
     @commands.Cog.listener('on_member_join')
     async def register_new_member(self, member: discord.Member):
         await MemberModel.join_member(member)
