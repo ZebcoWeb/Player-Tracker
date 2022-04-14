@@ -28,6 +28,7 @@ class QandaModel(Document):
     thread_id: int
     question_message_id: int 
     answer_message_id: Optional[int]
+    answer_message_reply_id: Optional[int]
     is_answered: bool = False
     is_active: bool = True
     created_at: datetime = Field(default_factory=datetime.utcnow)

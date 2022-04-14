@@ -62,11 +62,11 @@ class QandaForm(discord.ui.Modal):
         self.add_item(
             TextInput(
                 style= discord.TextStyle.long,
-                label='Describe',
+                label='Describe (Markdown supported)',
                 placeholder='Enter your question description here...',
                 custom_id='qanda_describe_input',
                 min_length = 10,
-                max_length = 350,
+                max_length = 400,
                 required = True,
             )
         )
@@ -87,7 +87,7 @@ class QandaForm(discord.ui.Modal):
         )
         em.set_author(name='New Question!', icon_url=interaction.user.avatar.url)
         if game:
-            em.add_field(name=f'\u200b', value=f'> `🕹️` **{game}**\n\u200b')
+            em.add_field(name=f'\u200b', value=f'```🕹️ {game}```\n\u200b')
         em.set_footer(text=f'Asked by {interaction.user.name}')
         question = await qanda_channel.send(embed=em, view=QandaView(self.client))
 

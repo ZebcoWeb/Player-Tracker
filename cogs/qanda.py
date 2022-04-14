@@ -190,11 +190,16 @@ class Qanda(commands.Cog):
     async def qanda_choose_answer(self, interaction: discord.Interaction, message: discord.Message):
         if message.channel.type == discord.ChannelType.public_thread and message.channel.parent_id == Channel.QA_CHANNEL:
             qanda_model = await QandaModel.find_one(QandaModel.thread_id == message.channel.id, fetch_links=True)
-            if qanda_model and qanda_model.questioner.member_id == interaction.user.id:
-                
+            if qanda_model and qanda_model.questioner.member_id == interaction.user.id:    
+
+                if qanda_model.is_answered:
+                    old_reply = await interaction.channel.fetch_message(qanda_model.answer_message_reply_id)
+                    await old_reply.delete()
+
                 # Reply the best answer
                 answer_reply = discord.Embed(description=f'✅ Accepted answer', color=discord.Color.green())
-                await message.reply(embed=answer_reply)
+                reply_message = await message.reply(embed=answer_reply)
+                qanda_model.answer_message_reply_id = reply_message.id
 
                 # Update the question embed
                 question = await message.channel.parent.fetch_message(qanda_model.question_message_id)
@@ -214,7 +219,7 @@ class Qanda(commands.Cog):
                 await qanda_model.save()
                 await member_model.save()
 
-        await interaction.response.defer(thinking=False)
+        await interaction.response.defer()
 
 
     # Moderator commands
