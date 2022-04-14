@@ -200,6 +200,10 @@ class Qanda(commands.Cog):
                 answer_reply = discord.Embed(description=f'✅ Accepted answer', color=discord.Color.green())
                 reply_message = await message.reply(embed=answer_reply)
                 qanda_model.answer_message_reply_id = reply_message.id
+                await interaction.response.send_message(
+                    embed=success_embed('You choose the best answer'),
+                    ephemeral=True
+                )
 
                 # Update the question embed
                 question = await message.channel.parent.fetch_message(qanda_model.question_message_id)
@@ -218,8 +222,6 @@ class Qanda(commands.Cog):
                 qanda_model.is_answered = True
                 await qanda_model.save()
                 await member_model.save()
-
-        await interaction.response.defer()
 
 
     # Moderator commands
