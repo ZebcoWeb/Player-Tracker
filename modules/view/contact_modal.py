@@ -61,8 +61,8 @@ class ContactUsForm(discord.ui.Modal):
 
         )
         em = discord.Embed(
-            title=f'{Emoji.CIRCLE} {subject}',
-            description=f'*{message}*\n\u200b',
+            title=f'{Emoji.CIRCLE} {subject.strip()}',
+            description=f'*{message.strip()}*\n\u200b',
             color=discord.Color.blue()
         )
         em.set_thumbnail(url=user.display_avatar.url)

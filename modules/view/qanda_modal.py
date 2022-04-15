@@ -80,8 +80,8 @@ class QandaForm(discord.ui.Modal):
         qanda_channel = await interaction.guild.fetch_channel(Channel.QA_CHANNEL)
 
         em = discord.Embed(
-            title=f'{Emoji.CIRCLE} {title}',
-            description=f'\u200b\n_{description}_\n',
+            title=f'{Emoji.CIRCLE} {title.strip()}',
+            description=f'\u200b\n_{description.strip()}_\n',
             colour=discord.Colour.yellow(),
             timestamp=datetime.now()
         )
