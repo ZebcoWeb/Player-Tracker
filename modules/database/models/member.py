@@ -1,6 +1,6 @@
 import discord
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional
 from beanie import Document, Indexed, Link
 from pydantic import Field, conint, constr, BaseModel
@@ -25,9 +25,8 @@ class MemberModel(Document):
     wiki_usage_value: conint(ge=0) = 0
     support_usage_value: conint(ge=0) = 0
     question_answered_count: conint(ge=0) = 0
-    # TODO: create voice state handler
-    total_play_time: conint(ge=0) = 0   # Based on minutes
     lang: constr(max_length=3) = 'en'
+    total_play_time: Optional[timedelta]
 
     latest_game_played: Optional[Link[GameModel]]
     games_played: List[Link[GameModel]] = []
@@ -86,11 +85,12 @@ class MemberModel(Document):
             if not member_model:
                 member_model = MemberModel(
                     member_id = member.id,
-                    latest_discord_id = member.name,
+                    latest_discord_id = member.name + "#" + member.discriminator,
                     is_robot= True if member.bot else False
                 )
                 await member_model.save()
             else:
+                member_model.latest_discord_id = member.name + "#" + member.discriminator
                 member_model.is_leaved = False
                 member_model.leaved_at = None
                 await member_model.save()

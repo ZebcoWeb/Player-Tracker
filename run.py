@@ -6,7 +6,7 @@ from discord import Intents, __version__
 from discord.ext.commands import Bot, when_mentioned_or
 
 from data.config import Config
-from modules.config import Env, init_database
+from modules.config import Env, init_database, init_cache
 from modules.database.models import GameModel
 from modules.database.models.qanda import QandaModel
 from modules.utils import load_extentions, get_loaded_ctxs, load_ctxs
@@ -27,9 +27,14 @@ class BotClient(Bot):
 
     async def setup_hook(self) -> None:
 
+        
         # Set up the database and check the connection status
         print('> Check the database connection...')
         await init_database(loop=self.loop)
+
+        # Set up the cache
+        print('> Initializing cache...')
+        init_cache()
 
         self.ctx_menus = []
 

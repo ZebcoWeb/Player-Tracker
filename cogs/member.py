@@ -1,9 +1,10 @@
 import discord
 import time
 from discord.ext import commands
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from modules.database.models import MemberModel
+from modules.database.models import MemberModel, RoomModel
+from modules.cache import PlayTime
 from data.config import Channel, Config
 
 
@@ -11,8 +12,6 @@ class Member(commands.Cog):
     def __init__(self, client:commands.Bot):
         self.client = client
         self.client.loop.create_task(self.leftover_members())
-
-
 
     async def leftover_members(self):
         guild = await self.client.fetch_guild(Config.SERVER_ID)
@@ -51,6 +50,30 @@ class Member(commands.Cog):
         await log_channel.send(
             embed=em
         )
+    
+    @commands.Cog.listener('on_voice_state_update')
+    async def room_play_time(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+            if after.channel:
+                channel = after.channel
+            else:
+                channel = before.channel
+            room_model = await RoomModel.find_one(RoomModel.room_voice_channel_id == channel.id)
+            if room_model:
+                if after.channel:
+                    PlayTime(
+                        member_id=member.id,
+                        room_id=channel.id,
+                    ).save()
+                elif before.channel:
+                    play_status = PlayTime.get_by(member_id=member.id)
+                    if play_status:
+                        playtime = datetime.now() - play_status.join_time
+                        if playtime > timedelta(minutes=1):
+                            member_model = await MemberModel.find_one(MemberModel.member_id == member.id)
+                            member_model.total_play_time += playtime
+                            await member_model.save()
+                            play_status.delete()
+
 
 async def setup(client:commands.Bot):
     await client.add_cog(Member(client))
