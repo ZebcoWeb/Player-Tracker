@@ -1,10 +1,11 @@
 import os, sys, inspect, discord
-from typing import List
 
+from typing import List
 from string import Template
 from datetime import datetime
 
 from discord.colour import Colour
+from discord.ext.commands import Bot
 from discord.app_commands import CommandTree, ContextMenu
 from beanie import Document
 from pymongo import MongoClient
@@ -33,6 +34,13 @@ def error_embed(msg: str, color = None):
         description = ':exclamation: ' + msg,
         color = color if color else Colour.red()
     )
+
+def get_loaded_ctxs(client: Bot):
+    ctxs = []
+    for ctx in client.tree.walk_commands(guild=discord.Object(id=Config.SERVER_ID)):
+        if isinstance(ctx, discord.app_commands.ContextMenu):
+            ctxs.append(ctx.callback.__qualname__)
+    return ctxs
 
 
 def set_level(pointer_index=1, last=False):

@@ -9,7 +9,8 @@ from data.config import Config
 from modules.config import Env, init_database
 from modules.database.models import GameModel
 from modules.database.models.qanda import QandaModel
-from modules.utils import load_extentions, load_ctxs
+from modules.utils import load_extentions, get_loaded_ctxs, load_ctxs
+
 from modules.view import PersistentView
 
 
@@ -89,7 +90,7 @@ class BotClient(Bot):
 """)
         print('> Loaded extensions --> ' + ', '.join(self.extensions.keys()))
         print('> Loaded persistent views --> ' + ', '.join(pview for pview in views_added))
-        print('> Loaded context menus --> ' + ', '.join(ctx.callback.__qualname__ for ctx in self.tree.walk_commands(guild=discord.Object(id=Config.SERVER_ID), type=discord.AppCommandType.message)))
+        print('> Loaded context menus --> ' + ', '.join(get_loaded_ctxs(self)))
         print('> Number of games loaded --> ' + str(len(self.games)))
 
 def run_discord_client():
