@@ -6,6 +6,7 @@ from discord.ext import commands
 from discord import app_commands
 
 from data.config import Config, Channel, Assets
+from modules.database.models.member import MemberModel
 from modules.view import CreateRoomView, RoomPlayerCountButton, RoomSendInvite
 from modules.utils import error_embed, success_embed
 from modules.database import RoomModel
@@ -98,13 +99,14 @@ class Room(commands.Cog):
         button: discord.Button = discord.utils.find(lambda b: b.custom_id == 'player_count_button', self.view.children)
         if button:
             new_button = copy.copy(button)
-            self.view.remove_item(button)
-            player_count = int(new_button.label[0]) - 1
-            new_button.label = f'{player_count} Players'
-            self.view.add_item(new_button)
+            if int(new_button.label[0]) > 0:
+                self.view.remove_item(button)
+                player_count = int(new_button.label[0]) - 1
+                new_button.label = f'{player_count} Players'
+                self.view.add_item(new_button)
 
-    @commands.Cog.listener()
-    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+    @commands.Cog.listener('on_voice_state_update')
+    async def update_player_counter(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         if self.room_context:
             if after.channel:
                 channel = after.channel
@@ -114,6 +116,7 @@ class Room(commands.Cog):
             if room_model:
                 if after.channel:
                     self.add_player_count_number()
+                    await MemberModel.find_one(MemberModel.member_id == member.id).inc({MemberModel.room_join_value: 1})
                 elif before.channel:
                     self.reduce_player_count_number()
                 await self.room_context.edit(view=self.view)
