@@ -72,3 +72,6 @@ class ContactUsForm(discord.ui.Modal):
             embed = success_embed(f"Your ticket has been created successfully: {ticket_channel.mention}\n\n- Please be patient while team members handle this ticket."),
             ephemeral=True
         )
+
+        member_model.support_usage_value += 1
+        await member_model.save()
