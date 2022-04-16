@@ -25,7 +25,7 @@ services:
       - player-tracker
 
   app:
-    image: registry.gitlab.com/zebco1382/player-tracker
+    build: .
     container_name: player-tracker
     depends_on:
       - database
