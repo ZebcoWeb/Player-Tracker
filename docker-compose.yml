@@ -13,6 +13,7 @@ services:
     restart: always
     networks:
       - player-tracker
+      
   
   cache:
     image: redis
