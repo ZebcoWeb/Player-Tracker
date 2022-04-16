@@ -28,8 +28,8 @@ services:
     build: .
     container_name: player-tracker
     depends_on:
-      - database
-      - cache
+      - mongo
+      - redis
     restart: on-failure
     networks:
       - player-tracker
