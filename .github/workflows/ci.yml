@@ -16,4 +16,4 @@ jobs:
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: 22
-        script: cd / && touch me
+        script: apt update && apt upgrade
