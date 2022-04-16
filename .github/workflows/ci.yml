@@ -16,4 +16,6 @@ jobs:
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: 22
-        script: apt-get update && printf yes | apt-get upgrade
+        script: | 
+          apt-get update
+          printf yes | apt-get upgrade
