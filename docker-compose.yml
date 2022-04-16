@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  databse:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - /data/db:/data/db
+    env_file:
+      - ./data/.env
+    restart: always
+    networks:
+      - player-tracker
+  
+  cache:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always
+    networks:
+      - player-tracker
+
+  app:
+    image: registry.gitlab.com/zebco1382/player-tracker
+    container_name: player-tracker
+    depends_on:
+      - database
+      - cache
+    restart: on-failure
+    networks:
+      - player-tracker
+
+networks:
+  player-tracker:
