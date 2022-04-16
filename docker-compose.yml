@@ -1,6 +1,6 @@
 
 services:
-  databse:
+  database:
     image: mongo
     container_name: mongo
     ports:
@@ -11,7 +11,7 @@ services:
       - ./data/.env
     restart: always
     networks:
-      - player-tracker
+      - main
       
   
   cache:
@@ -21,7 +21,7 @@ services:
       - "6379:6379"
     restart: always
     networks:
-      - player-tracker
+      - main
 
   app:
     build: .
@@ -31,7 +31,7 @@ services:
       - cache
     restart: on-failure
     networks:
-      - player-tracker
+      - main
 
 networks:
-  player-tracker:
+  main:
