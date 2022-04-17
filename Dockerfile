@@ -1,8 +1,8 @@
 FROM python:3.9.8
 
 
-RUN apt-get update && \ 
-    apt-get upgrade
+RUN sudo apt-get update && \ 
+    sudo apt-get upgrade
 
 
 WORKDIR /robot
