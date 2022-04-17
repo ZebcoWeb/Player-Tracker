@@ -32,4 +32,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: zebco/player-tracker:latest
+          tags: registry.gitlab.com/zebco/player-tracker:latest
