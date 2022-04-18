@@ -63,11 +63,10 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: 22
-          script: |
-            apt update && apt -y upgrade
-            cd /Player-Tracker/
-            docker login registry.gitlab.com -u ${{ secrets.GITLAB_USERNAME }} -p ${{ secrets.GITLAB_TOKEN }}
-            git pull https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/ZebcoWeb/Player-Tracker.git
-            docker rmi -f registry.gitlab.com/zebco/player-tracker:latest
+          script: apt update && apt -y upgrade && \
+            cd /Player-Tracker/ && \
+            docker login registry.gitlab.com -u ${{ secrets.GITLAB_USERNAME }} -p ${{ secrets.GITLAB_TOKEN }} && \
+            git pull https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/ZebcoWeb/Player-Tracker.git && \
+            docker rmi -f registry.gitlab.com/zebco/player-tracker:latest && \
             docker-compose down && sudo docker-compose up -d
             
