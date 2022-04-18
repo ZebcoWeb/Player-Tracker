@@ -133,3 +133,6 @@ compressed images
 localazy.exe
 *.json
 *.txt
+
+# Github auction cache
+tmp/
