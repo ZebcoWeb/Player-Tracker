@@ -7,8 +7,7 @@ from discord.ext.commands import Bot, when_mentioned_or
 
 from data.config import Config
 from modules.config import Env, init_database, init_cache
-from modules.database.models import GameModel
-from modules.database.models.qanda import QandaModel
+from modules.database.models import GameModel, QandaModel, LangModel
 from modules.utils import load_extentions, get_loaded_ctxs, load_ctxs
 
 from modules.view import PersistentView
@@ -54,10 +53,11 @@ class BotClient(Bot):
         # Sync the tree commands
         await self.tree.sync(guild=discord.Object(id=Config.SERVER_ID))
 
-        # Load all active games from database
-        print('> Loading games...')
-        self.games = await GameModel.active_games(ignore_cache=True)
+        # Load Cache datas
+        print('> Loading cache datas...')
+        self.games = await GameModel.trend_games(ignore_cache=True)
         self.qanda_games = await QandaModel.games(ignore_cache=True)
+        self.langs = await LangModel.active_langs(ignore_cache=True)
 
         # Loading persistent views
         print('> Loading persistent views...')

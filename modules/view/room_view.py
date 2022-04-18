@@ -136,6 +136,13 @@ class CreateRoomChooseLang(discord.ui.View):
         super().__init__(timeout=Config.ROOM_CREATION_TIMEOUT)
         self.room_model: RoomModel = room_model
         self.client: Client = client
+        select = discord.ui.Select(
+                    placeholder= 'Choose your room speaking language',
+                    custom_id='choose_langs_select',
+                    options=self._load_options(),
+                )
+        select.callback = self.choose_lang
+        self.add_item(select)
 
     def _load_options(self):
         options = []
@@ -144,12 +151,11 @@ class CreateRoomChooseLang(discord.ui.View):
                 discord.SelectOption(
                     label=lang.name,
                     value=lang.name,
-                    emoji=emoji,
+                    emoji=lang.emoji,
                     default=False
                 )
             )
 
-    @discord.ui.select(placeholder='Choose your room speaking language...', custom_id='choose_langs_select', options=_load_options())
     async def choose_lang(self, interaction: discord.Interaction, select):
         
         self.lang = interaction.data['values'][0]
@@ -163,7 +169,6 @@ class CreateRoomChooseLang(discord.ui.View):
         next_button.disabled = False
         
         for set_default in select.options:
-
             if set_default.value == self.lang:
                 set_default.default = True
 
