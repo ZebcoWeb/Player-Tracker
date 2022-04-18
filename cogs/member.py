@@ -57,7 +57,8 @@ class Member(commands.Cog):
                 channel = after.channel
             else:
                 channel = before.channel
-            room_model = await RoomModel.find_one(RoomModel.room_voice_channel_id == channel.id)
+            room_model = await RoomModel.find(RoomModel.room_voice_channel_id == channel.id, fetch_links=True).to_list()
+            room_model = room_model[0]
             if room_model:
                 if after.channel:
                     PlayTime(
@@ -69,9 +70,12 @@ class Member(commands.Cog):
                     if play_status:
                         playtime = datetime.now() - play_status.join_time
                         if playtime > timedelta(minutes=1):
-                            member_model = await MemberModel.find_one(MemberModel.member_id == member.id)
+                            member_model = room_model.creator
+                            game_model = member_model.game
                             member_model.total_play_time += playtime
+                            game_model.total_play_time += playtime
                             await member_model.save()
+                            await game_model.save()
                             play_status.delete()
 
 

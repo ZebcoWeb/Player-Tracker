@@ -3,6 +3,7 @@ from typing import Optional, Union
 
 from beanie import Document, Insert, Link, Indexed
 from beanie.odm.actions import after_event
+import discord
 from discord.client import Client
 from pydantic import Field, constr, conint
 from pydantic.typing import NoneType
@@ -45,40 +46,40 @@ class RoomModel(Document):
         validate_on_save = True
 
 
-    async def fetch_create_room_channel(self, client: Client):
-        return await client.fetch_channel(self.room_create_channel_id)
-    
-    async def fetch_start_msg(self, client: Client):
-        return await self.fetch_create_room_channel(client).fetch_message(self.start_msg_id) if self.start_msg_id else None
-
-    async def fetch_voice_channel(self, client: Client):
-        return await client.fetch_channel(self.room_voice_channel_id) if self.room_voice_channel_id else None
-
-    async def fetch_tracker_channel(self, client: Client):
-        return await client.fetch_channel(self.tracker_channel_id) if self.tracker_channel_id else None
-    
-    async def fetch_tracker_msg(self, client: Client):
-        return await self.fetch_tracker_channel(client).fetch_message(self.tracker_msg_id) if self.tracker_msg_id else None
-
-    async def fetch_invite(self, client: Client):
-        return await client.fetch_invite(url=self.invite_url)
+    async def full_delete_room(self, client: discord.Client):
+        channel = await client.fetch_channel(self.room_create_channel_id)
+        vc_channnel = await client.fetch_channel(self.room_voice_channel_id)
+        if channel:
+            await channel.delete()
+        if vc_channnel:
+            await vc_channnel.delete()
+        await self.delete()
 
     # -------------------
     # Signals
     # -------------------
 
+    # @after_event(Insert)
+    # def daily_room_action(self):
+
+    #     user: MemberModel = self.creator
+
+    #     if not user.is_staff:
+    #         if user.is_power_plus:
+    #             if user.daily_room_created < Config.DAILY_ROOM_LIMIT_POWER_PLUS:
+    #                 user.daily_room_created += 1
+    #                 user.save()
+
+    #         elif user.is_power:
+    #             if user.daily_room_created < Config.DAILY_ROOM_LIMIT_POWER:
+    #                 user.daily_room_created += 1
+    #                 user.save()
+
     @after_event(Insert)
-    def daily_room_action(self):
-
-        user: MemberModel = self.creator
-
-        if not user.is_staff:
-            if user.is_power_plus:
-                if user.daily_room_created < Config.DAILY_ROOM_LIMIT_POWER_PLUS:
-                    user.daily_room_created += 1
-                    user.save()
-
-            elif user.is_power:
-                if user.daily_room_created < Config.DAILY_ROOM_LIMIT_POWER:
-                    user.daily_room_created += 1
-                    user.save()
+    async def update_game_used_value(self):
+        if self.game:
+            self.game.used_value += 1
+            self.creator.latest_game_played = self.game
+            await self.game.save()
+        self.creator.room_create_value += 1
+        await self.creator.save()

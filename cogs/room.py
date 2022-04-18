@@ -66,15 +66,10 @@ class Room(commands.Cog):
         room_model = await RoomModel.find_one(RoomModel.room_voice_channel_id == room_id)
         if room_model:
             try:
-                text_channel = await self.client.fetch_channel(room_model.room_create_channel_id)
-                vc_chanel = await self.client.fetch_channel(room_id)
-                await text_channel.delete()
-                await vc_chanel.delete()
+                await room_model.full_delete_room(interaction.client)
             except:
                 pass
             finally:
-                #TODO: edit tracker message room
-                await room_model.delete()
                 await interaction.response.send_message(
                     embed=success_embed(f'Removed room: `{room_id}`'),
                     ephemeral=True,

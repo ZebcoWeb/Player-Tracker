@@ -10,6 +10,9 @@ class Emoji:
     ARROW_BACK = '<:arrow_backk:870680929868320809>'
     CURSOR = '<:cursor:962641472061063168>'
     USERS = '<:users:962779152895848498>'
+    MENU = '<:menu:964589442402758758>'
+    NAVBAR = '<:nanbar:965296887961903144>'
+    RED_BIN = '<:redbin:964593424340758578>'
 
     UR = '<:ur:959358598037778492>'
     DR = '<:dr:959358557160091648>'
@@ -62,7 +65,7 @@ class Config:
 
     LEVEL_INDEX_NUM = 6
 
-    IGNORE_MODELS = []
+    IGNORE_MODELS = ['wiki']
     IGNORE_EXTENTIONS = ['cogs.logs', 'cogs.moderation']
 
     ROOM_LANGS = (

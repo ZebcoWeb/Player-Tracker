@@ -11,6 +11,7 @@ from modules.database import GameModel, MemberModel, RoomModel
 from modules.utils import small_letter, set_level, had_room, is_ban_view, success_embed, error_embed
 
 from .view import PersistentView
+from .room_user_panel import RoomUserPanel
 
 __all__ = ['CreateRoomView', 'RoomPlayerCountButton', 'RoomSendInvite']
 
@@ -136,23 +137,19 @@ class CreateRoomChooseLang(discord.ui.View):
         self.room_model: RoomModel = room_model
         self.client: Client = client
 
-    
-    async def on_timeout(self):
-        room_channel = self.client.get_channel(self.room_model.room_create_channel_id)
-        await room_channel.delete(reason='Room creation timeout')
-
-    options = []
-    for key, name, emoji in Config.ROOM_LANGS:
-        options.append(
-            discord.SelectOption(
-                label=name,
-                value=key,
-                emoji=emoji,
-                default=False
+    def _load_options(self):
+        options = []
+        for lang in self.client.langs:
+            options.append(
+                discord.SelectOption(
+                    label=lang.name,
+                    value=lang.name,
+                    emoji=emoji,
+                    default=False
+                )
             )
-        )
 
-    @discord.ui.select(placeholder='Choose your room speaking language...', custom_id='choose_langs_select', options = options)
+    @discord.ui.select(placeholder='Choose your room speaking language...', custom_id='choose_langs_select', options=_load_options())
     async def choose_lang(self, interaction: discord.Interaction, select):
         
         self.lang = interaction.data['values'][0]
@@ -191,6 +188,10 @@ class CreateRoomChooseLang(discord.ui.View):
                 embed = em,
                 view = view
             )
+    
+    async def on_timeout(self):
+        room_channel = self.client.get_channel(self.room_model.room_create_channel_id)
+        await room_channel.delete(reason='Room creation timeout')
 
 
 
@@ -574,10 +575,13 @@ class RoomConfirmButton(discord.ui.Button):
             room_model.invite_url = invite.url
             room_model.tracker_channel_id = random.choice(Channel.TRACKER_CHANNELS)
             tracker_channel = client.get_channel(room_model.tracker_channel_id)
+
             emt = discord.Embed(
                 description=f'{room_model.invite_url}',
                 color=random.choice(Config.COLORS),
             )
+
+
             tracker_msg = await tracker_channel.send(
                 embed=emt,
             )
@@ -606,18 +610,15 @@ class RoomConfirmButton(discord.ui.Button):
             embed_des = C.CONTEXT_CREATED_ROOM.get('public_des') % (room_model.tracker_channel_id, room_model.room_voice_channel_id, room_model.invite_url)
         else:
             embed_des = C.CONTEXT_CREATED_ROOM.get('private_des')
-
         em = discord.Embed(
             description=embed_des,
             color=Colour.blue()
         )
         em.set_author(name=C.CONTEXT_CREATED_ROOM.get('title'), icon_url=C.CONTEXT_CREATED_ROOM.get('icon_url'))
-
         await interaction.message.edit(
             embed=em,
-            view=None
+            view=RoomUserPanel(room_model.invite_url)
         )
-        
 
 class RoomAgainButton(discord.ui.Button):
     def __init__(self, emoji: Emoji):

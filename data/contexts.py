@@ -32,7 +32,7 @@ CONTEXT_CONFIRM_ROOM = {
 
 CONTEXT_CREATED_ROOM = {
     'title':'Your room was successfully created!',
-    'public_des':'''The announcement of your room was sent in <#%s> channel. Wait for players to join your room __or__ share the invitation link between your friends and other players: <#%s>\n\n  <:circle_w:951908235051413514> Room invitation link: %s''',
+    'public_des':'''The announcement of your room was sent in <#%s> channel. Wait for players to join your room **or** share the invitation link between your friends and other players: <#%s>\n\n  <:circle_w:951908235051413514> Room invitation link: %s''',
     'private_des':'''Your private room has been created. You can give the invitation link of **__Gateways__** voice channels to your friends and wait for them to enter. After they entered one of the gateway channels, you can see them in the room. Now you can **__Right-click__** on their profile and select **__Move To__** to transfer them to your private channel:\n''',
     'icon_url':'https://media.discordapp.net/attachments/857006258330796052/863810047972081695/checkbox-marked-circle.png'
 }

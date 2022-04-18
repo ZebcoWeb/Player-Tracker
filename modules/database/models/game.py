@@ -15,7 +15,7 @@ class GameModel(Document):
     short: constr(strict=True, max_length=5, regex='^[A-Za-z0-9_]+$')
     logo_path: constr(strict=True)        # need to regex
     banner_path: Optional[str]            # need to regex
-    total_play_time: conint(ge=0) = 0     # Based on minutes
+    total_play_time: Optional[timedelta]
     used_value: conint(ge=0) = 0
     notif_value: conint(ge=0) = 0
     is_active: bool = True
@@ -43,19 +43,19 @@ class GameModel(Document):
 
     @staticmethod
     async def active_games(ignore_cache: bool = False) -> list:
-        return await GameModel.find({"is_active": True}, ignore_cache=ignore_cache).to_list()
+        return await GameModel.find(GameModel.is_active == True, ignore_cache=ignore_cache).to_list()
 
     @staticmethod
     async def trend_games(ignore_cache: bool = False) -> list:
         return await GameModel.find(
-            {"is_active": True}, 
+            GameModel.is_active == True, 
             ignore_cache=ignore_cache
             ).sort(-GameModel.used_value).to_list()
 
     @staticmethod
-    async def best_play_time(ignore_cache: bool = False) -> list:
+    async def most_play_time(ignore_cache: bool = False) -> list:
         return await GameModel.find(
-            {"is_active": True}, 
+            GameModel.is_active == True, 
             ignore_cache=ignore_cache
             ).sort(-GameModel.total_play_time).to_list()
 
