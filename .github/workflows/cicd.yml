@@ -66,4 +66,8 @@ jobs:
           script: |
             apt update && apt -y upgrade
             cd /Player-Tracker/
-            docker-compose up -d .
+            docker login registry.gitlab.com -u ${{ secrets.GITLAB_USERNAME }} -p ${{ secrets.GITLAB_TOKEN }}
+            git push
+            docker rmi -f registry.gitlab.com/zebco/player-tracker:latest
+            docker-compose up -d --force-recreate .
+            
