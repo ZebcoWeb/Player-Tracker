@@ -14,4 +14,4 @@ RUN python -m pip install --upgrade pip && \
 
 RUN echo "Build and run the robot..."
 
-CMD ["python", "-m" ,"robot_main.py"]
+CMD ["python", "-m" ,"run.py"]
