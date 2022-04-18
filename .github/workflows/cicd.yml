@@ -50,3 +50,25 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Start Deployment without copy
+        uses: wshihadeh/docker-deployment-action@master
+        with:
+          remote_docker_host: ${{ secrets.HOST }}
+          ssh_private_key: ${{ secrets.PRIVATE_KEY }}
+          ssh_public_key: ${{ secrets.PUBLIC_KEY }}
+          deployment_mode: docker-compose
+          copy_stack_file: false
+          deploy_path: /root/deployment-test
+          stack_file_name: docker-compose.yml
+          pull_images_first: true
+          keep_files: 3
+          args: -p Player-Tracker up -d
+          pre_deployment_command_args: |
+            apt update && apt -y upgrade && \
+            docker login -u ${{ secrets.GITLAB_USERNAME }} -p ${{ secrets.GITLAB_TOKEN }}
