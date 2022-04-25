@@ -1,5 +1,6 @@
 import asyncio
 import random
+from tkinter import Button
 
 import discord
 from discord import ButtonStyle, Client, Colour
@@ -21,6 +22,7 @@ class RoomSendInvite(discord.ui.View):
         self.client = client
         self.room_model = room_model
         super().__init__(timeout=None)
+
 
     @discord.ui.button(label='ㅤㅤAcceptㅤㅤ', style=ButtonStyle.green)
     async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -136,13 +138,25 @@ class CreateRoomChooseLang(discord.ui.View):
         super().__init__(timeout=Config.ROOM_CREATION_TIMEOUT)
         self.room_model: RoomModel = room_model
         self.client: Client = client
-        select = discord.ui.Select(
+        self.is_done = False
+        self.select = discord.ui.Select(
                     placeholder= 'Choose your room speaking language',
                     custom_id='choose_langs_select',
                     options=self._load_options(),
                 )
-        select.callback = self.choose_lang
-        self.add_item(select)
+        self.select.callback = self.choose_lang
+
+        next_button = discord.ui.Button(
+            label='ㅤNextㅤ',
+            custom_id='choose_next_lang_button',
+            disabled=True,
+            style=ButtonStyle.green, 
+            emoji=Emoji.ARROW_FORWARD,
+        )
+        next_button.callback = self.choose_lang_next
+
+        self.add_item(self.select)
+        self.add_item(next_button)
 
     def _load_options(self):
         options = []
@@ -151,12 +165,13 @@ class CreateRoomChooseLang(discord.ui.View):
                 discord.SelectOption(
                     label=lang.name,
                     value=lang.name,
-                    emoji=lang.emoji,
+                    emoji=discord.PartialEmoji(id=lang.emoji, name=lang.name),
                     default=False
                 )
             )
+        return options
 
-    async def choose_lang(self, interaction: discord.Interaction, select):
+    async def choose_lang(self, interaction: discord.Interaction):
         
         self.lang = interaction.data['values'][0]
 
@@ -164,11 +179,11 @@ class CreateRoomChooseLang(discord.ui.View):
             self.children, custom_id='choose_next_lang_button'
         )
 
-        self.room_model.lang = self.lang # set lang
+        self.room_model.lang = discord.utils.get(self.client.langs, name=self.lang)
 
         next_button.disabled = False
         
-        for set_default in select.options:
+        for set_default in self.select.options:
             if set_default.value == self.lang:
                 set_default.default = True
 
@@ -176,10 +191,10 @@ class CreateRoomChooseLang(discord.ui.View):
                 set_default.default = False
 
         await interaction.response.edit_message(view=self)
-
-    @discord.ui.button(label='ㅤNextㅤ', custom_id='choose_next_lang_button',disabled=True ,style=ButtonStyle.green, emoji=Emoji.ARROW_FORWARD)
-    async def choose_lang_next(self, interaction: discord.Interaction, button: discord.ui.Button):
+    
+    async def choose_lang_next(self, interaction: discord.Interaction):
         if self.lang:
+            self.is_done = True
             em = discord.Embed(
                 description= C.CONTEXT_GAME['des'] % (len(self.client.games)),
                 color = Colour.green()
@@ -195,16 +210,16 @@ class CreateRoomChooseLang(discord.ui.View):
             )
     
     async def on_timeout(self):
-        room_channel = self.client.get_channel(self.room_model.room_create_channel_id)
-        await room_channel.delete(reason='Room creation timeout')
-
+        if not self.is_done:
+            room_channel = await self.client.fetch_channel(self.room_model.room_create_channel_id)
+            await room_channel.delete(reason='Room creation timeout')
 
 
 class CreateRoomChooseGame(discord.ui.View):
     def __init__(self, client, room_model):
-
         self.room_model: RoomModel = room_model
         self.client: Client = client
+        self.is_done = False
 
         super().__init__(timeout=Config.ROOM_CREATION_TIMEOUT)
 
@@ -212,8 +227,9 @@ class CreateRoomChooseGame(discord.ui.View):
         self.add_item(CreateRoomChooseGameNext())
     
     async def on_timeout(self):
-        room_channel = self.client.get_channel(self.room_model.room_create_channel_id)
-        await room_channel.delete(reason='Room creation timeout')
+        if not self.is_done:
+            room_channel = await self.client.fetch_channel(self.room_model.room_create_channel_id)
+            await room_channel.delete(reason='Room creation timeout')
 
 
 class GamesListSelectMenu(discord.ui.Select):
@@ -346,7 +362,7 @@ class CreateRoomChooseGameNext(discord.ui.Button):
         game = data.values[0]
 
         if game not in ['next_page', 'previous_page']:
-
+            view.is_done = True
             view.room_model.game = await GameModel.get(game)
             view.room_model.start_msg_id = interaction.message.id
 
@@ -367,9 +383,9 @@ class CreateRoomChooseGameNext(discord.ui.Button):
 
 class CreateRoomChooseCapacity(discord.ui.View):
     def __init__(self, client, room_model):
-
         self.room_model: RoomModel = room_model
         self.client: Client = client
+        self.is_done = False
 
         super().__init__(timeout=Config.ROOM_CREATION_TIMEOUT)
     
@@ -392,7 +408,7 @@ class CreateRoomChooseCapacity(discord.ui.View):
             self.add_item(button)
     
     async def callback(self, interaction: discord.Interaction):
-            
+        self.is_done = True
         value = interaction.data.get('custom_id')
         capacity = Config.ROOM_CAPACITIES.get(value).get('capacity')
         self.room_model.capacity = capacity
@@ -412,15 +428,17 @@ class CreateRoomChooseCapacity(discord.ui.View):
         )
     
     async def on_timeout(self):
-        room_channel = self.client.get_channel(self.room_model.room_create_channel_id)
-        await room_channel.delete(reason='Room creation timeout')
+        if not self.is_done:
+            room_channel = await self.client.fetch_channel(self.room_model.room_create_channel_id)
+            await room_channel.delete(reason='Room creation timeout')
 
 # TODO: is waiting room
+
 class CreateRoomChooseBitrate(discord.ui.View):
     def __init__(self, client, room_model):
-
         self.room_model: RoomModel = room_model
         self.client: Client = client
+        self.is_done = False
 
         super().__init__(timeout=Config.ROOM_CREATION_TIMEOUT)
     
@@ -437,7 +455,7 @@ class CreateRoomChooseBitrate(discord.ui.View):
             self.add_item(button)
     
     async def callback(self, interaction: discord.Interaction):
-
+        self.is_done = True
         value = interaction.data.get('custom_id')
         bitrate = Config.ROOM_BITRATES.get(value).get('bitrate')
         self.room_model.bitrate = bitrate
@@ -457,14 +475,15 @@ class CreateRoomChooseBitrate(discord.ui.View):
         )
 
     async def on_timeout(self):
-        room_channel = self.client.get_channel(self.room_model.room_create_channel_id)
-        await room_channel.delete(reason='Room creation timeout')
+        if not self.is_done:
+            room_channel = await self.client.fetch_channel(self.room_model.room_create_channel_id)
+            await room_channel.delete(reason='Room creation timeout')
         
 class CreateRoomChooseMode(discord.ui.View):
     def __init__(self, client, room_model):
-
         self.room_model: RoomModel = room_model
         self.client: Client = client
+        self.is_done = False
 
         super().__init__(timeout=Config.ROOM_CREATION_TIMEOUT)
     
@@ -481,7 +500,7 @@ class CreateRoomChooseMode(discord.ui.View):
             self.add_item(button)
     
     async def callback(self, interaction: discord.Interaction):
-
+        self.is_done = True
         value = interaction.data.get('custom_id')
         mode = Config.ROOM_MODES.get(value).get('mode')
 
@@ -502,14 +521,15 @@ class CreateRoomChooseMode(discord.ui.View):
         )
     
     async def on_timeout(self):
-        room_channel = self.client.get_channel(self.room_model.room_create_channel_id)
-        await room_channel.delete(reason='Room creation timeout')
+        if not self.is_done:
+            room_channel = await self.client.fetch_channel(self.room_model.room_create_channel_id)
+            await room_channel.delete(reason='Room creation timeout')
 
 class CreateRoomConfirm(discord.ui.View):
     def __init__(self, client, room_model):
-
         self.room_model: RoomModel = room_model
         self.client: Client = client
+        self.is_done = False
 
         super().__init__(timeout=Config.ROOM_CREATION_TIMEOUT)
 
@@ -518,8 +538,9 @@ class CreateRoomConfirm(discord.ui.View):
         self.add_item(RoomCancelButton(emoji=self.client.get_emoji(Config.ROOM_CONFIRM.get('cancel_button').get('emoji'))))
     
     async def on_timeout(self):
-        room_channel = self.client.get_channel(self.room_model.room_create_channel_id)
-        await room_channel.delete(reason='Room creation timeout')
+        if not self.is_done:
+            room_channel = await self.client.fetch_channel(self.room_model.room_create_channel_id)
+            await room_channel.delete(reason='Room creation timeout')
 
 class RoomConfirmButton(discord.ui.Button):
     def __init__(self, emoji: Emoji):
@@ -531,6 +552,7 @@ class RoomConfirmButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
+        self.is_done = True
         room_model: RoomModel = self.view.room_model
         client: discord.Client = self.view.client
         guild = interaction.guild
@@ -562,7 +584,7 @@ class RoomConfirmButton(discord.ui.Button):
 
         game_obj: GameModel = room_model.game
 
-        room_name = f'{namespace} #{await RoomModel.count() + 1} .{small_letter(room_model.lang)} .{small_letter(game_obj.short)}'
+        room_name = f'{namespace} #{await RoomModel.count() + 1} .{small_letter(room_model.lang.short)} .{small_letter(game_obj.short)}'
 
         vc_room = await category_room.create_voice_channel(
             name = room_name,
@@ -604,12 +626,14 @@ class RoomConfirmButton(discord.ui.Button):
             room_model.invite_url = invite.url
 
 
+        
+        await room_model.save() #! fix signal & delete role
+
         await MemberModel.find_one(MemberModel.member_id == room_model.creator.member_id).update(
             Inc({MemberModel.room_create_value: 1}),
             Set({MemberModel.latest_game_played: room_model.game}),
+            Set({MemberModel.lang: room_model.lang}),
         )
-
-        await room_model.save() #! fix signal & delete role
 
         if room_model.mode == 'public':
             embed_des = C.CONTEXT_CREATED_ROOM.get('public_des') % (room_model.tracker_channel_id, room_model.room_voice_channel_id, room_model.invite_url)
@@ -635,7 +659,7 @@ class RoomAgainButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-
+        self.view.is_done = True
         room_model: RoomModel = self.view.room_model
         client = self.view.client
         new_room_model = RoomModel(
@@ -669,6 +693,7 @@ class RoomCancelButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
+        self.view.is_done = True
         em = discord.Embed(
             description=C.CONTEXT_CANCEL_ROOM.get('des'),
             color = Colour.red()
@@ -682,9 +707,9 @@ class RoomCancelButton(discord.ui.Button):
 
 class RoomCloseCancelView(discord.ui.View):
     def __init__(self, client, room_model):
-
         self.room_model: RoomModel = room_model
         self.client: Client = client
+        self.is_done = False
 
         super().__init__(timeout=Config.ROOM_CREATION_TIMEOUT)
 
@@ -708,6 +733,7 @@ class RoomCloseCancelView(discord.ui.View):
         self.add_item(button_no)
 
     async def callback_yes(self, interaction: discord.Interaction):
+        self.is_done = True
         em = discord.Embed(
             description=C.CONTEXT_CLOSE_ROOM.get('des'),
             color = Colour.red()
@@ -722,7 +748,7 @@ class RoomCloseCancelView(discord.ui.View):
         del self.room_model
 
     async def callback_no(self, interaction: discord.Interaction):
-
+        self.is_done = True
         em = discord.Embed(
             description='CONTEXT_CHOOSE_ROOM_CONFIRM_DES',
             color = Colour.green()
@@ -738,18 +764,6 @@ class RoomCloseCancelView(discord.ui.View):
         )
     
     async def on_timeout(self):
-        room_channel = self.client.get_channel(self.room_model.room_create_channel_id)
-        await room_channel.delete(reason='Room creation timeout')
-
-
-# class RoomDasboardOptions(discord.ui.Select):
-#     pass
-
-
-# class RoomDashboardView(discord.ui.View):
-#     def __init__(self, client, room_model):
-#         self.client = client
-#         self.room_model = room_model
-#         super().__init__(timeout=None)
-
-#         self.add_item(RoomDasboardOptions)
+        if not self.is_done:
+            room_channel = await self.client.fetch_channel(self.room_model.room_create_channel_id)
+            await room_channel.delete(reason='Room creation timeout')
