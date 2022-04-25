@@ -3,7 +3,7 @@ import discord
 from datetime import datetime, timedelta
 from typing import List, Optional
 from beanie import Document, Indexed, Link
-from pydantic import Field, conint, constr, BaseModel
+from pydantic import Field, conint, BaseModel
 from pymongo import TEXT
 
 from modules.utils import strfdelta
@@ -11,6 +11,7 @@ from data.config import Role
 
 from .game import GameModel
 from .wiki import WikiModel
+from .languages import LangModel
 
 class MemberShort(BaseModel):
     member_id: int
@@ -25,7 +26,7 @@ class MemberModel(Document):
     wiki_usage_value: conint(ge=0) = 0
     support_usage_value: conint(ge=0) = 0
     question_answered_count: conint(ge=0) = 0
-    lang: constr(max_length=3) = 'en'
+    lang: Optional[Link[LangModel]]
     total_play_time: Optional[timedelta]
 
     latest_game_played: Optional[Link[GameModel]]

@@ -1,17 +1,16 @@
+import discord
+
 from datetime import datetime
 from typing import Optional, Union
 
 from beanie import Document, Insert, Link, Indexed
 from beanie.odm.actions import after_event
-import discord
-from discord.client import Client
-from pydantic import Field, constr, conint
+from pydantic import Field
 from pydantic.typing import NoneType
-
-from data.config import Config, Regex
 
 from .game import GameModel
 from .member import MemberModel
+from .languages import LangModel
 
 __all__ = 'RoomModel'
 
@@ -22,7 +21,7 @@ class RoomModel(Document):
     room_create_channel_id: Optional[int]
     room_voice_channel_id: Optional[Indexed(int, unique=True)]
 
-    lang: Optional[constr(max_length=3)]
+    lang: Optional[Link[LangModel]]
     game: Optional[Link[GameModel]]         # reverse_delete_rule=NULLIFY
     capacity: Union[str, NoneType] = None
     mode: Optional[str]
