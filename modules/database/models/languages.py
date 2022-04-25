@@ -5,8 +5,8 @@ from pymongo import TEXT
 
 class LangModel(Document):
 
-    name: Indexed(constr(strict=True, max_length=40, regex='^[A-Za-z0-9_]+$'), unique=True, index_type = TEXT)
-    emoji: str
+    name: Indexed(constr(strict=True, max_length=40), unique=True, index_type = TEXT)
+    emoji: int
     short: constr(strict=True, max_length=5, regex='^[A-Za-z0-9_]+$')
     used_value: conint(ge=0) = 0
     is_active: bool = True
