@@ -1,16 +1,17 @@
 import functools
+from re import M
 
 from discord import Interaction, app_commands
-from discord.ext.commands import check
 
 from modules.database.models import MemberModel, RoomModel
+from data.config import Channel, Emoji
 from modules.utils import error_embed
 
 
 def is_ban_view(func):
     @functools.wraps(func)
     async def predicate(view , button, interaction, *args, **kwargs):
-        member_model = await MemberModel.find_one({'member_id': interaction.user.id})
+        member_model = await MemberModel.find_one(MemberModel.member_id == interaction.user.id)
         if member_model:
             if member_model.is_ban_forever:
                 await interaction.response.send_message(
@@ -32,14 +33,14 @@ def is_ban_view(func):
 
 def had_room(func):
     @functools.wraps(func)
-    async def predicate(view , interaction, button, *args, **kwargs):
+    async def predicate(view, interaction, button, *args, **kwargs):
         if interaction.user:
-            user_room = await RoomModel.find_one(RoomModel.creator.member_id == interaction.user.id)
-            if not user_room:
+            user_room = await RoomModel.find(RoomModel.creator.member_id == interaction.user.id, fetch_links=True).to_list()
+            if user_room == []:
                 return await func(view, button, interaction, *args, **kwargs)
             else:
                 await interaction.response.send_message(
-                    embed=error_embed(f'You already have a room. Delete the previous room to create a new one.\n\n- Your room: <#{RoomModel.room_voice_channel_id}>'),
+                    embed=error_embed(f'You already have a room. Delete the previous room to create a new one.\n\n{Emoji.CIRCLE} If your room is not available on the server, send a ticket to <#{Channel.CONTACT_US}>'),
                     ephemeral=True
                 )
     return predicate
