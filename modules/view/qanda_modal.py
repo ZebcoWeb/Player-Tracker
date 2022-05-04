@@ -5,7 +5,7 @@ from discord.ui import TextInput, Button
 
 from data.config import Channel, Emoji
 from modules.database.models import QandaModel, MemberModel
-from modules.utils import is_ban, success_embed
+from modules.utils import is_ban, success_embed, is_media
 
 from .view import PersistentView
 
@@ -31,6 +31,7 @@ class QandaView(PersistentView):
 class QandaForm(discord.ui.Modal):
     def __init__(self, client: discord.Client):
         self.client = client
+
         super().__init__(
             title="Enter new question",
             custom_id="qanda_modal",
@@ -66,15 +67,28 @@ class QandaForm(discord.ui.Modal):
                 placeholder='Enter your question description here...',
                 custom_id='qanda_describe_input',
                 min_length = 10,
-                max_length = 400,
+                max_length = 650,
                 required = True,
+            )
+        )
+        self.add_item(
+            TextInput(
+                style= discord.TextStyle.short,
+                label='Media URL',
+                placeholder='Enter your problem image URL here...(optional)',
+                custom_id='qanda_media_input',
+                min_length = 3,
+                max_length = 200,
+                required = False,
             )
         )
     
     async def on_submit(self, interaction: discord.Interaction):
         title = discord.utils.get(self.children, custom_id='qanda_title_input').value
         game_child = discord.utils.find(lambda c: c.custom_id == 'qanda_game_input', self.children)
+        media_child = discord.utils.find(lambda c: c.custom_id == 'qanda_media_input', self.children)
         game = game_child.value if game_child else None
+        media_url = await is_media(media_child.value) if media_child else None
         description = discord.utils.get(self.children, custom_id='qanda_describe_input').value
 
         qanda_channel = await interaction.guild.fetch_channel(Channel.QA_CHANNEL)
@@ -88,6 +102,8 @@ class QandaForm(discord.ui.Modal):
         em.set_author(name='New Question!', icon_url=interaction.user.avatar.url)
         if game:
             em.add_field(name=f'\u200b', value=f'```🕹️ {game}```\n\u200b')
+        if media_url:
+            em.set_image(url=media_url)
         em.set_footer(text=f'Asked by {interaction.user.name}')
         question = await qanda_channel.send(embed=em, view=QandaView(self.client))
 
@@ -103,7 +119,8 @@ class QandaForm(discord.ui.Modal):
             title=title,
             question=description,
             search_query=f'{title} {description}',
-            game=game if game else None,
+            game=game,
+            media=media_url,
             questioner=questioner,
             thread_id=thread.id,
             question_message_id=question.id,

@@ -23,6 +23,7 @@ class QandaModel(Document):
     search_query: Indexed(str, pymongo.TEXT)
     answer: Optional[str]
     game: Optional[str]
+    media: Optional[str]
     questioner: Link[MemberModel]
     answerer: Optional[Link[MemberModel]]
     thread_id: int
@@ -46,7 +47,8 @@ class QandaModel(Document):
     @staticmethod
     async def games(ignore_cache: bool = False) -> list:
         query = await QandaModel.find(QandaModel.is_active == True, ignore_cache=ignore_cache).project(GameShortView).to_list()
-        return list(set([game.game for game in query if game is not None]))
+        clear_list = list(filter(None ,[item.game for item in query]))
+        return list(set(clear_list))
 
 
     @staticmethod

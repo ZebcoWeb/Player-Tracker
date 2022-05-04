@@ -87,6 +87,7 @@ class Qanda(commands.Cog):
         else:
             await interaction.response.send_message(embed=error_embed(title='No results found'))
 
+
     @ask.command(name='list', description='🤔 List latest questions') #! Fix this
     @app_commands.autocomplete(game=qanda_games_autocomplete)
     @app_commands.describe(game='Enter game for list filter (Optional)')
@@ -102,6 +103,7 @@ class Qanda(commands.Cog):
             query['game'] = game
 
         result = await QandaModel.find(query, fetch_links=True).sort('-created_at').limit(25).to_list()
+        print(result)
         if not result:
             if game:
                 await interaction.response.send_message(embed=error_embed(f"No questions found for {game}"))

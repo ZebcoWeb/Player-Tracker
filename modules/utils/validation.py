@@ -1,5 +1,6 @@
 import functools
-from re import M
+import aiohttp
+import re
 
 from discord import Interaction, app_commands
 
@@ -67,3 +68,16 @@ def is_ban():
         else:
             pass
     return app_commands.check(predicate)
+
+
+async def is_media(url: str):
+    if re.match("^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$", url):
+        async with aiohttp.ClientSession() as session:
+            async with session.head(url) as res:
+                content_type = res.headers.get('content-type')
+                if content_type.startswith('image/'):
+                    return url
+                else:
+                    return None
+    else:
+        return None
