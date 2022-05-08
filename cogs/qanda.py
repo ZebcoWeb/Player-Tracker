@@ -228,30 +228,34 @@ class Qanda(commands.Cog):
 
     # Moderator commands
     @ask.command(name='delete', description='🤔 Delete a question (moderator only)')
-    @app_commands.describe(question_id='Question Message ID')
+    @app_commands.describe(question_id='Question Message ID', db_remove='Delete the question from database')
     @app_commands.checks.has_permissions(manage_channels=True)
     async def ask_delete(
         self, 
         interaction: discord.Interaction, 
         question_id: str,
-        ):
+        db_remove: bool = False
+    ):
         question_id = int(question_id)
         qanda_model = await QandaModel.find_one(QandaModel.question_message_id == question_id, fetch_links=True)
         if qanda_model:
-            if qanda_model.is_active:
-                qanda_model.is_active = False
-                await qanda_model.save()
-                try:
-                    qanda_channel = interaction.guild.get_channel(Channel.QA_CHANNEL)
-                    question_message = await qanda_channel.fetch_message(qanda_model.question_message_id)
-                    question_thread = qanda_channel.get_thread(qanda_model.thread_id)
-                    await question_message.delete()
-                    await question_thread.delete()
-                except Exception as e:
-                    pass
+            try:
+                qanda_channel = interaction.guild.get_channel(Channel.QA_CHANNEL)
+                question_message = await qanda_channel.fetch_message(qanda_model.question_message_id)
+                question_thread = qanda_channel.get_thread(qanda_model.thread_id)
+                await question_message.delete()
+                await question_thread.delete()
+            except:
+                pass
+            
+            if db_remove:
+                await qanda_model.delete()
                 await interaction.response.send_message(embed=success_embed(f'Question deleted'), ephemeral=True)
             else:
-                await interaction.response.send_message(embed=error_embed(f'Question already deleted'), ephemeral=True)
+                if qanda_model.is_active:
+                    qanda_model.is_active = False
+                    await qanda_model.save()
+                    await interaction.response.send_message(embed=success_embed(f'Question deactivated'), ephemeral=True)
         else:
             await interaction.response.send_message(embed=error_embed('Question not found'), ephemeral=True)
 
