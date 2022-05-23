@@ -2,7 +2,7 @@ import discord
 
 from datetime import datetime, timedelta
 from typing import List, Optional
-from beanie import Document, Indexed, Link
+from beanie import Document, Indexed, Link, Replace, after_event
 from pydantic import Field, conint, BaseModel
 from pymongo import TEXT
 
@@ -25,15 +25,19 @@ class MemberModel(Document):
     room_join_value: conint(ge=0) = 0
     wiki_usage_value: conint(ge=0) = 0
     support_usage_value: conint(ge=0) = 0
+    question_asked_count: conint(ge=0) = 0
     question_answered_count: conint(ge=0) = 0
+    invite_count: conint(ge=0) = 0
     lang: Optional[Link[LangModel]]
     total_play_time: Optional[timedelta]
 
     latest_game_played: Optional[Link[GameModel]]
     games_played: List[Link[GameModel]] = []
     wikis_used: List[Link[WikiModel]] = []
+    survey_result = Optional[Link[None]]
 
     is_staff: bool = False
+    is_surveyed: bool = False
     is_owner: bool = False
     is_power: bool = True
     is_power_plus: bool = False
@@ -78,6 +82,19 @@ class MemberModel(Document):
     @property
     def is_use_wiki(self):
         return True if self.wiki_usage_value != 0 else False
+
+    @staticmethod
+    async def survey_users():
+        list = []
+        query = await MemberModel.find_many(
+            MemberModel.is_surveyed == False,
+            MemberModel.is_leaved == False,
+            fetch_links=True
+        ).to_list()
+        if query:
+            list = [user for user in query if (user.room_create_value + user.question_asked_count) >= 5]
+        return list
+
 
     @staticmethod
     async def join_member(member: discord.Member):

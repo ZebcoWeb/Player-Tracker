@@ -5,25 +5,44 @@ from discord.ext import commands
 from discord import app_commands
 from discord.app_commands import Group
 
-from data.config import Config, Category
-from modules.view import ContactUsForm
-from modules.utils import success_embed, error_embed
+from data.config import Config, Category, Channel, Assets
+from modules.view import ContactUsForm, ContextView
+from modules.utils import error_embed
 
 
 class ContactUs(commands.Cog):
     def __init__(self, client:commands.Bot):
         self.client = client
 
-    @app_commands.command(name='contact', description='💬 Contact us')
-    @app_commands.guilds(Config.SERVER_ID)
-    async def contact_us(self, interaction: discord.Interaction):
+    contact = Group(name='contact_us', description='💬 Contact us commands', guild_ids=[Config.SERVER_ID])
+
+    @contact.command(name='new', description='💬 Open new ticket')
+    async def contact_us_new(self, interaction: discord.Interaction):
         await interaction.response.send_modal(ContactUsForm(self.client))
 
 
-    @app_commands.command(name='close', description='Close ticket')
+    @contact.command(name='context', description='💬 send context (admin only)')
+    @app_commands.checks.has_permissions(manage_channels=True)
+    async def contact_us_context(self, interaction: discord.Interaction):
+
+        channel = await self.client.fetch_channel(Channel.CONTACT_US)
+
+        async for message in channel.history():
+            await message.delete()
+        em = discord.Embed(
+            description= "**Looking for a way to contact us?** Fill out the support form by clicking the button and wait for the admins to respond.\n\n**NOTE:** Don't send spam or unnecessary content, you will be penalized if repeated.",
+            color=Config.BRAND_COLOR
+        )
+        em.set_author(name='Support section', icon_url=Assets.SUPPORT)
+        em.set_image(url=Assets.SUPPORT_BANNER)
+        await channel.send(embed=em, view=ContextView())
+        await interaction.response.defer()
+
+
+    @contact.command(name='close', description='Close ticket (admin only)')
     @app_commands.describe(channel='Channel to close the ticket (Optional)')
     @app_commands.checks.has_permissions(manage_channels=True)
-    async def contact_us(self, interaction: discord.Interaction, channel: discord.TextChannel = None):
+    async def contact_us_close(self, interaction: discord.Interaction, channel: discord.TextChannel = None):
         if channel is None:
             channel = interaction.channel
 

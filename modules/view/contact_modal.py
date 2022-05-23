@@ -5,7 +5,15 @@ from discord.ui import TextInput
 from data.config import Category, Role, Emoji
 from modules.utils import success_embed
 from modules.database import MemberModel
+
+from .view import PersistentView
     
+
+class ContextView(PersistentView):
+
+    @discord.ui.button(label='Submit ticket', style=discord.ButtonStyle.green, emoji=Emoji.CREATE_CIRCLE, custom_id='contact_us_submit_button')
+    async def callback(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(ContactUsForm(interaction.client))
 
 class ContactUsForm(discord.ui.Modal):
     def __init__(self, client: discord.Client):
@@ -19,7 +27,7 @@ class ContactUsForm(discord.ui.Modal):
         self.add_item(
             TextInput(
                 style= discord.TextStyle.short,
-                label='Subject',
+                label='🤙 Subject',
                 placeholder="What's your message subject? Be specific",
                 custom_id='contact_us_subject_input',
                 min_length = 5,
@@ -30,7 +38,7 @@ class ContactUsForm(discord.ui.Modal):
         self.add_item(
             TextInput(
                 style= discord.TextStyle.long,
-                label='Message',
+                label='📝 Message',
                 placeholder='Enter your message here...',
                 custom_id='contact_us_message_input',
                 min_length = 10,
@@ -69,7 +77,7 @@ class ContactUsForm(discord.ui.Modal):
         await ticket_channel.send(embed=em, content=f'{user.mention}')
 
         await interaction.response.send_message(
-            embed = success_embed(f"Your ticket has been created successfully: {ticket_channel.mention}\n\n- Please be patient while team members handle this ticket."),
+            embed = success_embed(f"Your ticket has been created successfully: {ticket_channel.mention}"),
             ephemeral=True
         )
 

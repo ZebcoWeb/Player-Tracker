@@ -1,8 +1,10 @@
 import os, sys, inspect, discord
 
-from typing import List
+from typing import List, Coroutine, Union
 from string import Template
 from datetime import datetime
+from io import BytesIO
+from PIL import Image
 
 from discord.colour import Colour
 from discord.ext.commands import Bot
@@ -10,7 +12,7 @@ from discord.app_commands import CommandTree, ContextMenu
 from beanie import Document
 from pymongo import MongoClient
 
-from data.config import Config, Emoji
+from data.config import Config, Emoji, Channel
 from modules.config import Env
 
 
@@ -184,3 +186,49 @@ def smart_truncate(content, length=100, suffix='...'):
         return content
     else:
         return ' '.join(content[:length+1].split(' ')[0:-1]) + suffix
+
+async def checks(interaction: discord.Interaction, functions: Union[List[Coroutine], Coroutine]):
+    if isinstance(functions, list):
+        for func in functions:
+            if not await func(interaction):
+                return False
+        return True
+    elif isinstance(functions, Coroutine):
+        return await functions(interaction)
+
+def capacity_humanize(capacity: int) -> str:
+    if capacity == 2:
+        return 'Due'
+    elif capacity == 3:
+        return 'Trio'
+    elif capacity == 4:
+        return 'Quad'
+    elif capacity == 6:
+        return 'Six'
+    elif capacity == 8:
+        return 'Eight'
+    elif capacity == 20:
+        return 'Twenty'
+    elif capacity == 50:
+        return 'Fifty'
+    elif capacity == None:
+        return 'Infinite'
+    else:
+        return 'Unknown'
+    
+async def generate_tracker_footer(client, color):
+    url_generator = await client.fetch_channel(Channel.URL_GENERATOR_CHANNEL)
+    footer_img = Image.new("RGB", (600, 24), color=str(color))
+    buffer = BytesIO()
+    footer_img.save(buffer, format="PNG")
+    buffer.seek(0)
+    footer_img_file = discord.File(buffer, filename="footer.png")
+    message = await url_generator.send(file=footer_img_file)
+    att = message.attachments[0]
+    return att.url
+
+def tracker_message_players(current_player_count: int, total_player_count: Union[int, None], closed: bool = False):
+    if total_player_count == None:
+        total_player_count = 'Ꝏ'
+    status_str = f'{Emoji.YELLOW_DOT} *The room is currently closed*' if closed else f'{Emoji.GREEN_DOT} *The room is currently online*'
+    return f"ㅤㅤㅤㅤ{Emoji.P}{Emoji.L}{Emoji.A}{Emoji.Y}\nㅤㅤㅤㅤㅤㅤㅤ{Emoji.N} {Emoji.O} {Emoji.W}\n\n {status_str} **[{current_player_count}/{total_player_count}]**\n\n**➜ Room Information**"

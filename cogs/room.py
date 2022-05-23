@@ -5,10 +5,10 @@ from discord.app_commands import Group, ContextMenu
 from discord.ext import commands
 from discord import app_commands
 
-from data.config import Config, Channel, Assets
+from data.config import Config, Channel, Assets, Emoji
 from modules.database.models.member import MemberModel
 from modules.view import CreateRoomView, RoomPlayerCountButton, RoomSendInvite
-from modules.utils import error_embed, success_embed
+from modules.utils import error_embed, success_embed, tracker_message_players
 from modules.database import RoomModel
 
 
@@ -21,7 +21,10 @@ class Room(commands.Cog):
             ContextMenu(name='📩 Send room invite', callback=self.send_room_invite_url, guild_ids=[Config.SERVER_ID])
         )
 
-        self.client.loop.create_task(self.send_room_context())
+        # self.client.loop.create_task(self.send_room_context())
+
+    async def cog_load(self):
+        await self.send_room_context()
 
 
     room = Group(name='room', description='Room commands', guild_ids=[Config.SERVER_ID])
@@ -31,13 +34,13 @@ class Room(commands.Cog):
 
         async for message in channel.history():
             await message.delete()
-        description = f'**Looking for player to play with?** By creating your own room, you can compete with other players like a virtual gamenet and test yourself in group or multiplayer games.\n\n<:circle_w:951908235051413514> If you want to become a member of another player\'s room, you can see the latest created rooms in the tracker channels:\n> <#{Channel.TRACKER_CHANNELS[0]}>\n> <#{Channel.TRACKER_CHANNELS[1]}>\n\n<:circle_w:951908235051413514> Click on the button and create a room with your desired specifications.'
+        description = f'**Looking for player to play with?** By creating your own room, you can compete with other players like a virtual gamenet and test yourself in group or multiplayer games.\n\n<:circle_w:951908235051413514> If you want to become a member of another player\'s room, you can see the latest created rooms in the tracker channels:\n> <#{Channel.TRACKER_CHANNELS[0]}>\n> <#{Channel.TRACKER_CHANNELS[1]}>\n'
         em = discord.Embed(
-            title='🕹️ Create your own room',
             description=description,
             color=Config.COLOR_DISCORD
         )
         em.set_image(url=Assets.LFP_BANNER)
+        em.set_author(name='Create your own room', icon_url=Assets.PLAY)
 
         self.view = CreateRoomView(client=self.client)
         self.view.add_item(RoomPlayerCountButton())
@@ -80,18 +83,25 @@ class Room(commands.Cog):
                 ephemeral=True,
             )
 
-    def add_player_count_number(self):
+    async def add_player_count_number(self, room, current_player):
         button: discord.Button = discord.utils.find(lambda b: b.custom_id == 'player_count_button', self.view.children)
+        tracker_channel = await self.client.fetch_channel(room.tracker_channel_id)
+        tracker_msg = await tracker_channel.fetch_message(room.tracker_msg_id)
         if button:
             new_button = copy.copy(button)
             self.view.remove_item(button)
             player_count = int(new_button.label[0]) + 1
             new_button.label = f'{player_count} Players'
             self.view.add_item(new_button)
-            
+        embed = tracker_msg.embeds[0]
+        embed.description = tracker_message_players(current_player, room.capacity)
+        await tracker_msg.edit(embed=embed)
 
-    def reduce_player_count_number(self):
+
+    async def reduce_player_count_number(self, room, current_player):
         button: discord.Button = discord.utils.find(lambda b: b.custom_id == 'player_count_button', self.view.children)
+        tracker_channel = await self.client.fetch_channel(room.tracker_channel_id)
+        tracker_msg = await tracker_channel.fetch_message(room.tracker_msg_id)
         if button:
             new_button = copy.copy(button)
             if int(new_button.label[0]) > 0:
@@ -99,6 +109,10 @@ class Room(commands.Cog):
                 player_count = int(new_button.label[0]) - 1
                 new_button.label = f'{player_count} Players'
                 self.view.add_item(new_button)
+        embed = tracker_msg.embeds[0]
+        embed.description = tracker_message_players(current_player, room.capacity)
+        await tracker_msg.edit(embed=embed)
+
 
     @commands.Cog.listener('on_voice_state_update')
     async def update_player_counter(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
@@ -107,15 +121,14 @@ class Room(commands.Cog):
                 channel = after.channel
             else:
                 channel = before.channel
-            room_model = await RoomModel.find_one(RoomModel.room_voice_channel_id == channel.id).exists()
+            room_model = await RoomModel.find_one(RoomModel.room_voice_channel_id == channel.id)
             if room_model:
                 if after.channel:
-                    self.add_player_count_number()
+                    await self.add_player_count_number(room=room_model, current_player=len(channel.members))
                     await MemberModel.find_one(MemberModel.member_id == member.id).inc({MemberModel.room_join_value: 1})
                 elif before.channel:
-                    self.reduce_player_count_number()
+                    await self.reduce_player_count_number(room=room_model, current_player=len(channel.members))
                 await self.room_context.edit(view=self.view)
-    
 
 
     async def send_room_invite_url(self, interaction: discord.Interaction, user: discord.Member):

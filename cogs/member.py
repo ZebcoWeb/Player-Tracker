@@ -58,8 +58,8 @@ class Member(commands.Cog):
             else:
                 channel = before.channel
             room_model = await RoomModel.find(RoomModel.room_voice_channel_id == channel.id, fetch_links=True).to_list()
-            room_model = room_model[0]
-            if room_model:
+            if room_model != []:
+                room_model = room_model[0]
                 if after.channel:
                     PlayTime(
                         member_id=member.id,

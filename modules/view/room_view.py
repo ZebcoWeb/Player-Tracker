@@ -1,18 +1,25 @@
 import asyncio
 import random
-from tkinter import Button
-
 import discord
+
+from io import BytesIO
+from PIL import Image
 from discord import ButtonStyle, Client, Colour
 from beanie.odm.operators.update.general import Set, Inc
 
 import data.contexts as C
 from data.config import Category, Channel, Config, Emoji, Role
 from modules.database import GameModel, MemberModel, RoomModel
-from modules.utils import small_letter, set_level, had_room, is_ban_view, success_embed, error_embed
-
+from modules.database.models.languages import LangModel
+from modules.utils import (
+small_letter, set_level, had_room_handler, 
+success_embed, error_embed, is_ban_handler, 
+is_inviter_handler, checks, capacity_humanize,
+tracker_message_players, generate_tracker_footer,
+)
 from .view import PersistentView
 from .room_user_panel import RoomUserPanel
+from .like_view import LikeButton
 
 __all__ = ['CreateRoomView', 'RoomPlayerCountButton', 'RoomSendInvite']
 
@@ -72,10 +79,8 @@ class RoomPlayerCountButton(discord.ui.Button):
 
 class CreateRoomView(PersistentView):
 
-    @had_room
-    @is_ban_view
     @discord.ui.button(label='ㅤCreate Roomㅤ', custom_id='create_room_button', style=ButtonStyle.green, emoji=Emoji.CREATE_CIRCLE)
-    async def choose_lang(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def choose_lang(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         new_room_category: discord.CategoryChannel = self.client.get_channel(Category.PLATFORM)
         user = interaction.user
@@ -102,10 +107,10 @@ class CreateRoomView(PersistentView):
             )
 
             em = discord.Embed(
-                description = C.CONTEXT_LANG['des'] % (20), #TODO: will refrence to the number of languages
+                description = C.CONTEXT_LANG['des'] % (await LangModel.count()),
                 color = Colour.green()
             )
-            em.set_author(name=C.CONTEXT_LANG['title'], icon_url=C.CONTEXT_LANG['icon_url'])
+            em.set_author(name=C.CONTEXT_LANG['title'])
             em.description += '\n\n' + set_level(1)
 
             room_model = RoomModel(creator=member_model)
@@ -131,6 +136,12 @@ class CreateRoomView(PersistentView):
                 ephemeral = True,
                 view=view
             )
+    
+    async def interaction_check(self, interaction: discord.Interaction):
+        return await checks(
+            interaction,
+            [is_inviter_handler, is_ban_handler, had_room_handler]
+        )
 
 
 class CreateRoomChooseLang(discord.ui.View):
@@ -140,10 +151,10 @@ class CreateRoomChooseLang(discord.ui.View):
         self.client: Client = client
         self.is_done = False
         self.select = discord.ui.Select(
-                    placeholder= 'Choose your room speaking language',
-                    custom_id='choose_langs_select',
-                    options=self._load_options(),
-                )
+            placeholder= 'Choose your room speaking language',
+            custom_id='choose_langs_select',
+            options=self._load_options(),
+        )
         self.select.callback = self.choose_lang
 
         next_button = discord.ui.Button(
@@ -165,7 +176,6 @@ class CreateRoomChooseLang(discord.ui.View):
                 discord.SelectOption(
                     label=lang.name,
                     value=lang.name,
-                    emoji=discord.PartialEmoji(id=lang.emoji, name=lang.name),
                     default=False
                 )
             )
@@ -603,15 +613,36 @@ class RoomConfirmButton(discord.ui.Button):
             room_model.tracker_channel_id = random.choice(Channel.TRACKER_CHANNELS)
             tracker_channel = client.get_channel(room_model.tracker_channel_id)
 
+            emt_description = tracker_message_players(0, room_model.capacity)
+
+            random_color = discord.Colour.random()
             emt = discord.Embed(
-                description=f'{room_model.invite_url}',
-                color=random.choice(Config.COLORS),
+                description=emt_description,
+                color=random_color,
+            )
+            emt.set_author(name=f'New room created by {user.display_name}#{user.discriminator}', icon_url=user.display_avatar.url)
+            emt.set_thumbnail(url=room_model.game.logo_url)
+            emt.add_field(name='🌍  Language', value=f'ㅤ**⤷** *{room_model.lang.name}*', inline=True)
+            emt.add_field(name='🕹️  Game', value=f'ㅤ**⤷** *{room_model.game.name_key}*', inline=True)
+            emt.add_field(name='👨‍💻  Capacity', value=f'ㅤ**⤷** *{capacity_humanize(room_model.capacity)}*', inline=True)
+
+            emt.set_image(
+                url=await generate_tracker_footer(client, random_color)
             )
 
+            join_button = discord.ui.Button(
+                label='Join Now',
+                url=invite.url,
+            )
+            tracker_view = discord.ui.View(timeout=None)
+            tracker_view.add_item(join_button)
+            tracker_view.add_item(LikeButton())
 
             tracker_msg = await tracker_channel.send(
                 embed=emt,
+                view=tracker_view
             )
+
             room_model.tracker_msg_id = tracker_msg.id
 
         elif room_model.mode == 'private':
@@ -624,7 +655,6 @@ class RoomConfirmButton(discord.ui.Button):
             )
 
             room_model.invite_url = invite.url
-
 
         
         await room_model.save() #! fix signal & delete role
@@ -670,7 +700,7 @@ class RoomAgainButton(discord.ui.Button):
         )
 
         em = discord.Embed(
-            description = C.CONTEXT_LANG['des'] % (20), #TODO: will refrence to the number of languages
+            description = C.CONTEXT_LANG['des'] % (await LangModel.count()),
             color = Colour.green()
         )
         em.set_author(name=C.CONTEXT_LANG['title'])

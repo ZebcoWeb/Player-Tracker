@@ -13,6 +13,7 @@ class Emoji:
     MENU = '<:menu:964589442402758758>'
     NAVBAR = '<:nanbar:965296887961903144>'
     RED_BIN = '<:redbin:964593424340758578>'
+    LIKE = '<:like:902221842167762964>'
 
     UR = '<:ur:959358598037778492>'
     DR = '<:dr:959358557160091648>'
@@ -25,13 +26,29 @@ class Emoji:
     Q2 = '<:q2:959539988574392340>'
     RS = '<:rs:959535650980368464>'
     LS = '<:ls:959535651877965864>'
-    L = '<:l_:959535651051675729>'
+    LL = '<:ll_:959535651051675729>'
+
+    # Neon letter
+    P = '<:P_:973568668573253652>'
+    L = '<:L_:973569203141496903>'
+    A = '<:A_:973569203305082970>'
+    Y = '<:Y_:973569203049201704>'
+    N = '<:N_:973570165654577174>'
+    O = '<:O_:973570167068037182>'
+    W = '<:W_:973570166157897788>'
+
+    # Emotes
+    EXCELLENT = '<:excellent:977960440137130004>'
+    GOOD = '<:good:977960439793213521>'
+    BAD = '<:bad:977960439981936762>'
+
 
     RANK1 = '<:rank1:959360760134397992>'
     RANK2 = '<:rank2:959360760671256586>'
     RANK3 = '<:rank3:959383794580852746>'
     RANK_OTHER = '<:rank_other:959360760599965737>'
 
+    # languages
     ENGLISH_FLAG = '<:usaflag:868206926171881583>'
     PERSIAN_FLAG = '<:iranflag:868206924032778350>'
 
@@ -41,14 +58,18 @@ class Emoji:
 
     CIRCLE = '<:circle_w:951908235051413514>'
 
+    YELLOW_DOT = '<:YellowDot:974013824334184519>'
+    GREEN_DOT = '<:GreenDot:974013823667273740>'
+
     CHECK = '<:check:868207164001497158>'
     CLOSE = '<:cancell:868207163582083083>'
+
+    QANDA = '<:qanda:952239387503104060>'
 
     CONFIRM_TONE_ID = 868207164001497158
     AGAIN_TONE_ID = 868207163569471570
     CANCEL_TONE_ID = 868207163582083083
 
-    QA_ID = 952239387503104060
     
 class Config:
     VERSION = '1.0.0b'
@@ -66,7 +87,8 @@ class Config:
     LEVEL_INDEX_NUM = 6
 
     IGNORE_MODELS = ['wiki']
-    IGNORE_EXTENTIONS = ['cogs.logs', 'cogs.moderation']
+    IGNORE_EXTENTIONS = ['cogs.moderation', 'cogs.quote']
+    IGNORE_INVITE_CHECKER = []
 
     ROOM_LANGS = (
         ('en', 'English', Emoji.ENGLISH_FLAG),
@@ -102,20 +124,20 @@ class Config:
         'cancel_button' : {'emoji':868207163582083083, 'id':'cancel_button', 'label':'Cancel'},
     }
 
-    COLORS= [
-        0xFF0000,0xFF1493,0xFF8C00,0xFFFF00,0xDA70D6,0x7B68EE,
-        0x00FF00,0x228B22,0x00FFFF,0xFFDEAD,0xFFFFFF,0x0000FF
-    ]
+    COLOR_DISCORD = 0x2F3136
 
-    COLOR_DISCORD = 0x2F3136  #gray
 
-class Todoist:
-    SECTION_ID = 70057385
-    PROJECT_ID = 2278428039
 
-    LABEL_LOW = 2158970441
-    LABEL_MEDIUM = 2158970440
-    LABEL_HIGH = 2158970439
+class Vote:
+    TOPGG = 'https://top.gg/'
+    DISBOARD = 'https://disboard.org/'
+    DISCORD_SERVERS = 'https://discordservers.com/'
+    DISCORD_ST = 'https://discord.st/'
+
+    TOPGG_EMOJI = '<:topgg:978342922112106516>'
+    DISBOARD_EMOJI = '<:disboard:978342922061774868>'
+    DISCORD_SERVERS_EMOJI = '<:discordservers:978342918651789352>'
+    DISCORD_ST_EMOJI = '<:discordstreet:978343485826556014>'
 
 class Role:
     POWER = 863414941033299979
@@ -134,6 +156,7 @@ class Channel:
     QUOTE = 952524810381033482
     SUPPORT_NOTICE = 961335267506135091
     CONTACT_US = 855896054221373470
+    URL_GENERATOR_CHANNEL = 976591580079194112
     
     DATE_STATS_VC = 952233403925790750
     ROOM_STATS_VC = 952232648686841906
@@ -148,10 +171,12 @@ class Regex:
     DISCORD_INVITE_LINK = '/(https?://)?(www.)?(discord.(gg|io|me|li)|discordapp.com/invite)/.+[a-z]/g'
 
 class Assets:
+    PLAY = 'https://media.discordapp.net/attachments/912750358890160148/978409017057619988/play.png'
+    SUPPORT = 'https://cdn.discordapp.com/attachments/912750358890160148/978412564952277052/support.png'
     LOGO_PURPLE = 'https://media.discordapp.net/attachments/912750358890160148/912752149090435152/logo_purple.png'
     LOGO_PURPLE_MINI = 'https://media.discordapp.net/attachments/912750358890160148/912752149090435152/logo_purple.png?width=50&height=49'
-    TASK_ICON = 'https://media.discordapp.net/attachments/912750358890160148/912752149270777936/task_icon.png'
     ADD_ICON = 'https://media.discordapp.net/attachments/912750358890160148/916057441274318868/plus-circle.png'
     LFP_BANNER = 'https://media.discordapp.net/attachments/912750358890160148/916059487234846830/lfp.png'
     QUOTE_BANNER = 'https://media.discordapp.net/attachments/912750358890160148/959529389526253608/quote.png'
+    SUPPORT_BANNER = 'https://cdn.discordapp.com/attachments/912750358890160148/978417654152982568/Support-banner.png'
     HELP_ICON = 'https://cdn.discordapp.com/attachments/912750358890160148/959078018716934164/help-circle.png'

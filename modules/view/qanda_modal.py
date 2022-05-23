@@ -5,7 +5,8 @@ from discord.ui import TextInput, Button
 
 from data.config import Channel, Emoji
 from modules.database.models import QandaModel, MemberModel
-from modules.utils import is_ban, success_embed, is_media
+from beanie.odm.operators.update.general import Inc
+from modules.utils import is_ban_handler, is_inviter_handler, success_embed, is_media, checks
 
 from .view import PersistentView
 
@@ -14,18 +15,16 @@ class QandaView(PersistentView):
     def __init__(self, client: discord.Client):
         self.client = client
         super().__init__(timeout=None)
-
-        button = Button(
-            label='ㅤAsk Questionㅤ', 
-            style=discord.ButtonStyle.green, 
-            custom_id='qanda_submit_button',
-            emoji=self.client.get_emoji(Emoji.QA_ID)
-        )
-        self.add_item(button)
-        button.callback = self.submit_button
-
-    async def submit_button(self, interaction: discord.Interaction):
+    
+    @discord.ui.button(label='ㅤAsk Questionㅤ', style=discord.ButtonStyle.green, custom_id='qanda_submit_button', emoji=discord.PartialEmoji.from_str(Emoji.QANDA))
+    async def ask_callback(self, interaction: discord.Interaction, button: Button):
         await interaction.response.send_modal(QandaForm(self.client))
+
+    async def interaction_check(self, interaction: discord.Interaction):
+        return await checks(
+            interaction,
+            [is_ban_handler, is_inviter_handler]
+        )
 
 
 class QandaForm(discord.ui.Modal):
@@ -41,7 +40,7 @@ class QandaForm(discord.ui.Modal):
         self.add_item(
             TextInput(
                 style= discord.TextStyle.short,
-                label='Title',
+                label='❔ Title',
                 placeholder="What's your gaming question? Be specific",
                 custom_id='qanda_title_input',
                 min_length = 5,
@@ -52,7 +51,7 @@ class QandaForm(discord.ui.Modal):
         self.add_item(
             TextInput(
                 style= discord.TextStyle.short,
-                label='Game',
+                label='🕹️ Game',
                 placeholder='Enter your game here...(optional)',
                 custom_id='qanda_game_input',
                 min_length = 5,
@@ -63,7 +62,7 @@ class QandaForm(discord.ui.Modal):
         self.add_item(
             TextInput(
                 style= discord.TextStyle.long,
-                label='Describe (Markdown supported)',
+                label='📝 Describe (Markdown supported)',
                 placeholder='Enter your question description here...',
                 custom_id='qanda_describe_input',
                 min_length = 10,
@@ -74,7 +73,7 @@ class QandaForm(discord.ui.Modal):
         self.add_item(
             TextInput(
                 style= discord.TextStyle.short,
-                label='Media URL',
+                label='📷 Media URL',
                 placeholder='Enter your problem image URL here...(optional)',
                 custom_id='qanda_media_input',
                 min_length = 3,
@@ -127,3 +126,6 @@ class QandaForm(discord.ui.Modal):
         )
         await QandaModel.insert_one(qanda_model)
         await interaction.response.send_message(embed=success_embed('Question created!'), ephemeral=True)
+        await questioner.update(
+            Inc({MemberModel.question_asked_count: 1})
+        )

@@ -91,14 +91,15 @@ class Quote(commands.Cog):
         async for message in quote_channel.history():
             await message.delete()
         quotes = await QuoteModel.find(QuoteModel.is_active == True, sort='+display_count', limit=1).to_list()
+        print(quotes)
         if quotes:
             quote = quotes[0]
             embed_color = Config.COLOR_DISCORD
 
             description = ''
-            description += f'{Emoji.RS + Emoji.Q1 + Emoji.LS + (Emoji.L * 13)}\n\n'
+            description += f'{Emoji.RS + Emoji.Q1 + Emoji.LS + (Emoji.LL * 13)}\n\n'
             description += f'*{quote.quote}*\n\n'
-            description += f'{(Emoji.L * 13) + Emoji.RS + Emoji.Q2 + Emoji.LS}\n\nㅤㅤ{Emoji.CIRCLE} From **{quote.game}** game\n'
+            description += f'{(Emoji.LL * 13) + Emoji.RS + Emoji.Q2 + Emoji.LS}\n\nㅤㅤ{Emoji.CIRCLE} From **{quote.game}** game\n'
 
             quote_embed = discord.Embed(
                 title=f'💬  {quote.character}',

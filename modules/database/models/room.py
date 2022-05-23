@@ -1,12 +1,14 @@
 import discord
 
 from datetime import datetime
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 from beanie import Document, Insert, Link, Indexed
 from beanie.odm.actions import after_event
 from pydantic import Field
 from pydantic.typing import NoneType
+
+from modules.utils import tracker_message_players
 
 from .game import GameModel
 from .member import MemberModel
@@ -26,6 +28,8 @@ class RoomModel(Document):
     capacity: Union[str, NoneType] = None
     mode: Optional[str]
     bitrate: Optional[str]
+
+    likes: List[int] = []
     
     invite_url: Optional[str]
     tracker_msg_id: Optional[int]
@@ -48,10 +52,16 @@ class RoomModel(Document):
     async def full_delete_room(self, client: discord.Client):
         channel = await client.fetch_channel(self.room_create_channel_id)
         vc_channnel = await client.fetch_channel(self.room_voice_channel_id)
+        tracker_channel = await client.fetch_channel(self.tracker_channel_id)
+        tracker_msg = await tracker_channel.fetch_message(self.tracker_msg_id)
         if channel:
             await channel.delete()
         if vc_channnel:
             await vc_channnel.delete()
+        if tracker_msg:
+            embed = tracker_msg.embeds[0]
+            embed.description = tracker_message_players(0, self.capacity, True)
+            await tracker_msg.edit(embed=embed)
         await self.delete()
 
     # -------------------

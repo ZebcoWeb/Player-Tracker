@@ -7,7 +7,7 @@ from discord.ext import commands
 from discord.app_commands import Group, ContextMenu
 
 from data.config import Channel, Config, Assets, Emoji
-from modules.utils.validation import is_ban
+from modules.utils.validation import is_ban, is_inviter
 from modules.view import QandaForm
 from modules.utils import error_embed, success_embed, smart_truncate, Paginator, is_ban
 from modules.database.models import QandaModel, MemberModel
@@ -48,6 +48,7 @@ class Qanda(commands.Cog):
     @ask.command(name='new', description = '🤔 Ask a new gaming question')
     @app_commands.checks.cooldown(1, 10)
     @is_ban()
+    @is_inviter()
     async def ask_new(self, interaction: discord.Interaction):
         await interaction.response.send_modal(QandaForm(self.client))
 
@@ -57,6 +58,7 @@ class Qanda(commands.Cog):
     @app_commands.describe(query='Search query...')
     @app_commands.checks.cooldown(1, 15)
     @is_ban()
+    @is_inviter()
     async def ask_search(
         self, 
         interaction: discord.Interaction,
@@ -88,11 +90,12 @@ class Qanda(commands.Cog):
             await interaction.response.send_message(embed=error_embed(title='No results found'))
 
 
-    @ask.command(name='list', description='🤔 List latest questions') #! Fix this
+    @ask.command(name='list', description='🤔 List latest questions')
     @app_commands.autocomplete(game=qanda_games_autocomplete)
     @app_commands.describe(game='Enter game for list filter (Optional)')
     @app_commands.checks.cooldown(1, 15)
     @is_ban()
+    @is_inviter()
     async def ask_list(
         self,
         interaction: discord.Interaction,
@@ -139,6 +142,7 @@ class Qanda(commands.Cog):
     @ask.command(name='top', description='🤔 List of top respondents')
     @app_commands.checks.cooldown(1, 10)
     @is_ban()
+    @is_inviter()
     async def top_list(
         self,         
         interaction: discord.Interaction

@@ -9,7 +9,6 @@ from modules.utils.functions import success_embed
 
 
 
-
 class RoomDashboard(discord.ui.Select):
     def __init__(self) -> None:
         super().__init__(

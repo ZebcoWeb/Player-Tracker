@@ -5,3 +5,4 @@ from .wiki import WikiModel
 from .qanda import QandaModel
 from .quote import QuoteModel
 from .languages import LangModel
+from .survey import *
