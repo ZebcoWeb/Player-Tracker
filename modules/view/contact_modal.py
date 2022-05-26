@@ -4,7 +4,7 @@ from discord.ui import TextInput
 
 from data.config import Category, Role, Emoji
 from modules.utils import success_embed
-from modules.database import MemberModel
+from modules.models import MemberModel
 
 from .view import PersistentView
     

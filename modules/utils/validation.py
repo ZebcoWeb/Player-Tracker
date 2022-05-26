@@ -4,7 +4,7 @@ import re
 
 from discord import Interaction, app_commands
 
-from modules.database.models import MemberModel, RoomModel
+from modules.models import MemberModel, RoomModel
 from data.config import Channel, Emoji, Config
 from modules.utils import error_embed
 

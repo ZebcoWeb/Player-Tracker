@@ -4,7 +4,7 @@ import asyncio
 from discord import ButtonStyle
 
 from data.config import Emoji
-from modules.database import RoomModel
+from modules.models import RoomModel
 from modules.utils.functions import success_embed
 
 

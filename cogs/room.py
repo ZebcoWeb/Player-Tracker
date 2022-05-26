@@ -5,11 +5,10 @@ from discord.app_commands import Group, ContextMenu
 from discord.ext import commands
 from discord import app_commands
 
-from data.config import Config, Channel, Assets, Emoji
-from modules.database.models.member import MemberModel
+from data.config import Config, Channel, Assets
+from modules.models import MemberModel, RoomModel
 from modules.view import CreateRoomView, RoomPlayerCountButton, RoomSendInvite
 from modules.utils import error_embed, success_embed, tracker_message_players
-from modules.database import RoomModel
 
 
 class Room(commands.Cog):

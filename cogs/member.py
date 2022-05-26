@@ -3,7 +3,7 @@ import time
 from discord.ext import commands
 from datetime import datetime, timedelta
 
-from modules.database.models import MemberModel, RoomModel
+from modules.models import MemberModel, RoomModel
 from modules.cache import PlayTime
 from data.config import Channel, Config
 

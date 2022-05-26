@@ -10,7 +10,7 @@ from data.config import Channel, Config, Assets, Emoji
 from modules.utils.validation import is_ban, is_inviter
 from modules.view import QandaForm
 from modules.utils import error_embed, success_embed, smart_truncate, Paginator, is_ban
-from modules.database.models import QandaModel, MemberModel
+from modules.models import QandaModel, MemberModel
 
 class Qanda(commands.Cog):
     def __init__(self, client:commands.Bot):

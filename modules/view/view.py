@@ -1,6 +1,5 @@
 import discord
 
-from discord.ext import commands
 
 class PersistentView(discord.ui.View):
     def __init__(self, **kwargs):

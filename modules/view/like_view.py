@@ -4,7 +4,7 @@ import copy
 from discord import ButtonStyle, Interaction
 
 from data.config import Emoji
-from modules.database import RoomModel, MemberModel
+from modules.models import RoomModel, MemberModel
 from modules.utils import error_embed
 
 

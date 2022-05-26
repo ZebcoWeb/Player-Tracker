@@ -5,7 +5,7 @@ from discord.ext import commands
 
 from data.config import Config
 from modules.utils import error_embed, success_embed
-from modules.database import MemberModel
+from modules.models import MemberModel
 
 
 class InviteLogger(commands.Cog):

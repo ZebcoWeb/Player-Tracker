@@ -1,14 +1,14 @@
 import sys
 import inspect
-
 import discord
+
 from discord import Intents, __version__
 from discord.ext.commands import Bot, when_mentioned_or
 
 from data.config import Config
 from modules.config import Env, init_database, init_cache
-from modules.database.models import GameModel, QandaModel, LangModel
-from modules.utils import load_extentions, get_loaded_ctxs, load_ctxs
+from modules.models import GameModel, QandaModel, LangModel
+from modules.utils import load_extentions, load_ctxs
 
 from modules.view import PersistentView
 
@@ -95,7 +95,6 @@ class BotClient(Bot):
 """)
         print('> Loaded extensions --> ' + ', '.join(self.extensions.keys()))
         print('> Loaded persistent views --> ' + ', '.join(pview for pview in views_added))
-        print('> Loaded context menus --> ' + ', '.join(get_loaded_ctxs(self)))
         print('> Number of games loaded --> ' + str(len(self.games)))
 
 def run_discord_client():

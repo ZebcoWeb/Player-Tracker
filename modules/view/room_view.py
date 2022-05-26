@@ -2,15 +2,13 @@ import asyncio
 import random
 import discord
 
-from io import BytesIO
-from PIL import Image
+
 from discord import ButtonStyle, Client, Colour
 from beanie.odm.operators.update.general import Set, Inc
 
 import data.contexts as C
 from data.config import Category, Channel, Config, Emoji, Role
-from modules.database import GameModel, MemberModel, RoomModel
-from modules.database.models.languages import LangModel
+from modules.models import GameModel, MemberModel, RoomModel, LangModel
 from modules.utils import (
 small_letter, set_level, had_room_handler, 
 success_embed, error_embed, is_ban_handler, 

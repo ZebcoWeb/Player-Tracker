@@ -4,7 +4,7 @@ import datetime
 from discord.ext import commands, tasks
 
 from data.config import Channel
-from modules.database.models import RoomModel
+from modules.models import RoomModel
 
 
 class Tasks(commands.Cog):

@@ -4,7 +4,7 @@ from datetime import datetime
 from discord.ui import TextInput, Button
 
 from data.config import Channel, Emoji
-from modules.database.models import QandaModel, MemberModel
+from modules.models import QandaModel, MemberModel
 from beanie.odm.operators.update.general import Inc
 from modules.utils import is_ban_handler, is_inviter_handler, success_embed, is_media, checks
 

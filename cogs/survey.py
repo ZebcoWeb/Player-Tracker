@@ -4,7 +4,7 @@ from discord.ext import commands, tasks
 from beanie.odm.operators.update.general import Set
 
 from data.config import Config
-from modules.database.models import MemberModel
+from modules.models import MemberModel
 from modules.utils import set_level
 from modules.view import StartSurveyView
 

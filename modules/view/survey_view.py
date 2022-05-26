@@ -1,6 +1,6 @@
 import discord
 
-from modules.database import SurveyModel, SectionEnum, UXEnum, SupportEnum, MemberModel
+from modules.models import SurveyModel, SectionEnum, UXEnum, SupportEnum, MemberModel
 from data.config import Config, Emoji, Vote
 from modules.utils import set_level
 

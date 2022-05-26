@@ -1,17 +1,16 @@
 
 import discord
 import aiohttp
-import random
 
 from bs4 import BeautifulSoup
 from html2text import html2text
 from discord.ext import commands, tasks
-from discord import Asset, app_commands
+from discord import app_commands
 from discord.app_commands import Group
 
 from data.config import Config, Channel, Assets, Emoji
-from modules.utils import error_embed, success_embed
-from modules.database.models import QuoteModel
+from modules.utils import success_embed
+from modules.models import QuoteModel
 
 
 class Quote(commands.Cog):
