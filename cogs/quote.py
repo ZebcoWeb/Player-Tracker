@@ -5,6 +5,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 from html2text import html2text
 from discord.ext import commands, tasks
+from beanie.odm.operators.update.general import Inc
 from discord import app_commands
 from discord.app_commands import Group
 
@@ -18,9 +19,9 @@ class Quote(commands.Cog):
         self.client = client
         self.daily_quote_task.start()
 
-    quote = Group(name="quote", description="💬 Quote commands", guild_ids=[Config.SERVER_ID])
+    quote = Group(name="quote-mod", description="🗿 Quote moderator commands (admin only)", guild_ids=[Config.SERVER_ID])
     
-    @quote.command(name='update', description='💬 Fetch & update quotes (admin only)')
+    @quote.command(name='update', description='🗿 Fetch & update quotes')
     @app_commands.checks.has_permissions(administrator=True)
     async def quote_fetch(self, interaction: discord.Interaction):
 
@@ -77,7 +78,7 @@ class Quote(commands.Cog):
         self.daily_quote_task.restart()
     
 
-    @quote.command(name='restart', description='💬 Restart quote task (admin only)')
+    @quote.command(name='restart', description='🗿 Restart quote task')
     @app_commands.checks.has_permissions(administrator=True)
     async def quote_task(self, interaction: discord.Interaction):
         self.daily_quote_task.restart()
@@ -90,7 +91,6 @@ class Quote(commands.Cog):
         async for message in quote_channel.history():
             await message.delete()
         quotes = await QuoteModel.find(QuoteModel.is_active == True, sort='+display_count', limit=1).to_list()
-        print(quotes)
         if quotes:
             quote = quotes[0]
             embed_color = Config.COLOR_DISCORD
@@ -110,8 +110,9 @@ class Quote(commands.Cog):
 
             quote_message = await quote_channel.send(embeds=[banner_embed, quote_embed])
             await quote_message.add_reaction('\U0001f5ff')
-            quote.display_count += 1
-            await quote.save()
+            await quote.update(
+                Inc({QuoteModel.display_count: 1})
+            )
 
 
 async def setup(client:commands.Bot):

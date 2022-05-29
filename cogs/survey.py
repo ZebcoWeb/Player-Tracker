@@ -1,11 +1,13 @@
 import discord
 
 from discord.ext import commands, tasks
+from discord import app_commands
+from discord.app_commands import Group
 from beanie.odm.operators.update.general import Set
 
 from data.config import Config
-from modules.models import MemberModel
-from modules.utils import set_level
+from modules.models import MemberModel, SurveyModel
+from modules.utils import set_level , success_embed, error_embed
 from modules.view import StartSurveyView
 
 
@@ -14,6 +16,21 @@ class Survey(commands.Cog):
         self.client = client
 
         self.send_survey_loop.start()
+    
+    room = Group(name='survey-mod', description='📮 Survay moderation commands (admin only)', guild_ids=[Config.SERVER_ID])
+
+    @room.command(name='resend', description='📮 Resend user survay')
+    @app_commands.checks.has_permissions(administrator=True)
+    async def resend_survey(self, interaction: discord.Interaction, user: discord.Member):
+        survey = await SurveyModel.find_one(SurveyModel.target_user.member_id == user.id, fetch_links=True)
+        if survey:
+            survey.target_user.is_surveyed == False
+            await survey.target_user.save()
+            
+            await survey.delete()
+            await interaction.send(embed=success_embed(f'Survey for {user.mention} has been resend (Deleted)'))
+        else:
+            await interaction.send(error_embed(f'Survey for {user.mention} not found'))
 
 
     @tasks.loop(seconds=30)
@@ -43,6 +60,8 @@ class Survey(commands.Cog):
                 await user.update(
                     Set({MemberModel.is_surveyed: True})
                 )
+    
+    
 
 
 

@@ -3,12 +3,12 @@ from typing import Optional
 
 from beanie import Document, Indexed
 from discord import Client, Emoji
-from pydantic import Field, conint, constr, FileUrl
+from pydantic import Field, conint, constr
 from pymongo import TEXT
 
 
 class GameModel(Document):
-    
+
     name_key: Indexed(constr(strict=True, max_length=40, regex='^[A-Za-z0-9_]+$'), unique=True, index_type = TEXT)
     emoji: int
     short: constr(strict=True, max_length=5, regex='^[A-Za-z0-9_]+$')

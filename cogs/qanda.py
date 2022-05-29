@@ -22,6 +22,8 @@ class Qanda(commands.Cog):
     # Commands Group
     ask = Group(name="ask", description="🤔 Q&A commands", guild_ids=[Config.SERVER_ID])
 
+    ask_mod = Group(name="ask-mod", description="🤔 Q&A moderator commands", guild_ids=[Config.SERVER_ID])
+
     # Auto-completes
     async def qanda_games_autocomplete(
     self,
@@ -106,7 +108,6 @@ class Qanda(commands.Cog):
             query['game'] = game
 
         result = await QandaModel.find(query, fetch_links=True).sort('-created_at').limit(25).to_list()
-        print(result)
         if not result:
             if game:
                 await interaction.response.send_message(embed=error_embed(f"No questions found for {game}"))
@@ -171,15 +172,15 @@ class Qanda(commands.Cog):
                     display_name = i.latest_discord_id
                 rank = loop_counter + 1
                 if rank == 1:
-                    item_embed.description += f"{Emoji.UR + (3 * Emoji.HC)} {Emoji.RANK1}  **#1 {display_name}**⠀{Emoji.ARROW_FORWARD}⠀**{i.question_answered_count}** *answers*\n"
+                    item_embed.description += f"{Emoji.UR + (3 * Emoji.HC)} **`[Ⅰ]` {display_name}**⠀{Emoji.ARROW_FORWARD}⠀**{i.question_answered_count}** *answers*\n"
                 elif rank == 2:
-                    item_embed.description += f"{Emoji.VC}\n{Emoji.CR + (2 * Emoji.HC)} {Emoji.RANK2}  **#2 {display_name}**⠀{Emoji.ARROW_FORWARD}⠀**{i.question_answered_count}** *answers*\n"
+                    item_embed.description += f"{Emoji.VC}\n{Emoji.CR + (2 * Emoji.HC)} **`[Ⅱ]` {display_name}**⠀{Emoji.ARROW_FORWARD}⠀**{i.question_answered_count}** *answers*\n"
                 elif rank == 3:
-                    item_embed.description += f"{Emoji.VC}\n{Emoji.CR + Emoji.HC} {Emoji.RANK3}  **#3 {display_name}**⠀{Emoji.ARROW_FORWARD}⠀**{i.question_answered_count}** *answers*\n"
+                    item_embed.description += f"{Emoji.VC}\n{Emoji.CR + Emoji.HC} **`[Ⅲ]` {display_name}**⠀{Emoji.ARROW_FORWARD}⠀**{i.question_answered_count}** *answers*\n"
                 elif rank == len(result):
-                    item_embed.description += f"{Emoji.VC}\n{Emoji.DR} {Emoji.RANK_OTHER}  **#{rank} {display_name}**⠀{Emoji.ARROW_FORWARD}⠀**{i.question_answered_count}** *answers*\n"
+                    item_embed.description += f"{Emoji.VC}\n{Emoji.DR} **`[#{rank}]` {display_name}**⠀{Emoji.ARROW_FORWARD}⠀**{i.question_answered_count}** *answers*\n"
                 else:
-                    item_embed.description += f"{Emoji.VC}\n{Emoji.CR} {Emoji.RANK_OTHER}  **#{rank} {display_name}**⠀{Emoji.ARROW_FORWARD}⠀**{i.question_answered_count}** *answers*\n"
+                    item_embed.description += f"{Emoji.VC}\n{Emoji.CR} **`[#{rank}]` {display_name}**⠀{Emoji.ARROW_FORWARD}⠀**{i.question_answered_count}** *answers*\n"
 
                 item_counter += 1
                 loop_counter += 1
@@ -231,7 +232,7 @@ class Qanda(commands.Cog):
 
 
     # Moderator commands
-    @ask.command(name='delete', description='🤔 Delete a question (moderator only)')
+    @ask_mod.command(name='delete', description='🤔 Delete a question')
     @app_commands.describe(question_id='Question Message ID', db_remove='Delete the question from database')
     @app_commands.checks.has_permissions(manage_channels=True)
     async def ask_delete(

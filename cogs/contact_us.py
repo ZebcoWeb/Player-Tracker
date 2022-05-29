@@ -14,14 +14,17 @@ class ContactUs(commands.Cog):
     def __init__(self, client:commands.Bot):
         self.client = client
 
-    contact = Group(name='contact_us', description='💬 Contact us commands', guild_ids=[Config.SERVER_ID])
 
-    @contact.command(name='new', description='💬 Open new ticket')
+    # General
+    @app_commands.guilds(Config.SERVER_ID)
+    @app_commands.command(name='support', description='💬 Open new support ticket')
     async def contact_us_new(self, interaction: discord.Interaction):
         await interaction.response.send_modal(ContactUsForm(self.client))
 
+    # Moderation
+    support_mod = Group(name='support-mod', description='💬 Support moderation commands', guild_ids=[Config.SERVER_ID])
 
-    @contact.command(name='context', description='💬 send context (admin only)')
+    @support_mod.command(name='context', description='💬 Send context')
     @app_commands.checks.has_permissions(manage_channels=True)
     async def contact_us_context(self, interaction: discord.Interaction):
 
@@ -39,7 +42,7 @@ class ContactUs(commands.Cog):
         await interaction.response.defer()
 
 
-    @contact.command(name='close', description='Close ticket (admin only)')
+    @support_mod.command(name='close', description='💬 Close ticket')
     @app_commands.describe(channel='Channel to close the ticket (Optional)')
     @app_commands.checks.has_permissions(manage_channels=True)
     async def contact_us_close(self, interaction: discord.Interaction, channel: discord.TextChannel = None):

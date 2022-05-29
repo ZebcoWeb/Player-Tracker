@@ -130,39 +130,6 @@ def inspect_models():
                     models.append(obj)
     return models
 
-class Attach:
-    """Construct a Attach for local files"""
-    def __init__(
-        self, filepath: str) -> None:
-        self.filepath = filepath.replace('\\' , '/')
-    
-    def __str__(self) -> str:
-        return f"<Attach filepath='{self.filepath}'>"
-
-    def __repr__(self) -> str:
-        return f"<Attach filepath='{self.filepath}' filename='{self.filename}' size='{self.size} KB'>"
-
-    @property
-    def filename(self):
-        return self.filepath.split('/')[-1]
-
-    @property
-    def fileobj(self):
-        return discord.File(self.filepath, filename=self.filename)
-    
-    @property
-    def url(self):
-        return 'attachment://' + self.filename
-    
-    @property
-    def size(self):
-        """Return file sixe to KB"""
-        return round(
-            number = os.path.getsize(self.filepath) / 1024, 
-            ndigits=2
-        )
-    
-
 class DeltaTemplate(Template):
     delimiter = "%"
 

@@ -20,13 +20,11 @@ class Room(commands.Cog):
             ContextMenu(name='📩 Send room invite', callback=self.send_room_invite_url, guild_ids=[Config.SERVER_ID])
         )
 
-        # self.client.loop.create_task(self.send_room_context())
-
     async def cog_load(self):
         await self.send_room_context()
 
 
-    room = Group(name='room', description='Room commands', guild_ids=[Config.SERVER_ID])
+    room = Group(name='room-mod', description='🕹️ Room commands (admin only)', guild_ids=[Config.SERVER_ID])
     
     async def send_room_context(self):
         channel = await self.client.fetch_channel(Channel.CREATE_ROOM)
@@ -51,7 +49,7 @@ class Room(commands.Cog):
         return channel
 
 
-    @room.command(name='context', description='send room context (admin only)')
+    @room.command(name='context', description='🕹️ Send room context')
     @app_commands.checks.has_permissions(administrator=True)
     async def room_msg(self, interaction: discord.Interaction) -> None:
         channel = await self.send_room_context()
@@ -60,7 +58,7 @@ class Room(commands.Cog):
             ephemeral=True,
         )
     
-    @room.command(name='remove', description='remove a room (admin only)')
+    @room.command(name='remove', description='🕹️ Remove a room')
     @app_commands.checks.has_permissions(administrator=True)
     @app_commands.describe(room_id='room voice channel id')
     async def remove_room(self, interaction: discord.Interaction, room_id: str) -> None:

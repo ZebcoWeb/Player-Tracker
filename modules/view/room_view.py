@@ -276,7 +276,7 @@ class GamesListSelectMenu(discord.ui.Select):
             options.append(
                 discord.SelectOption(
                     label = game.name_key,
-                    description = '> 0 Playing now',
+                    # description = '> 0 Playing now',
                     value = str(game.id),
                     emoji=game.get_emoji(self.client),
                 )
@@ -655,7 +655,7 @@ class RoomConfirmButton(discord.ui.Button):
             room_model.invite_url = invite.url
 
         
-        await room_model.save() #! fix signal & delete role
+        await room_model.save()
 
         await MemberModel.find_one(MemberModel.member_id == room_model.creator.member_id).update(
             Inc({MemberModel.room_create_value: 1}),

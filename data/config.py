@@ -87,7 +87,7 @@ class Config:
     LEVEL_INDEX_NUM = 6
 
     IGNORE_MODELS = ['wiki']
-    IGNORE_EXTENTIONS = ['cogs.moderation', 'cogs.quote']
+    IGNORE_EXTENTIONS = []
     IGNORE_INVITE_CHECKER = []
 
     ROOM_LANGS = (
