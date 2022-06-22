@@ -100,10 +100,9 @@ class BotClient(Bot):
 def run_discord_client():
 
     print('\n> Starting...')
-    client = BotClient()
 
     # Run the client
-    return client.run(Env.TOKEN)
+    BotClient().run(Env.TOKEN)
 
 if __name__ == '__main__':
     run_discord_client()

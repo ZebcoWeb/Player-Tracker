@@ -16,7 +16,7 @@ class QandaView(PersistentView):
         self.client = client
         super().__init__(timeout=None)
     
-    @discord.ui.button(label='ㅤAsk Questionㅤ', style=discord.ButtonStyle.green, custom_id='qanda_submit_button', emoji=discord.PartialEmoji.from_str(Emoji.QANDA))
+    @discord.ui.button(label='ㅤAsk New Questionㅤ', style=discord.ButtonStyle.green, custom_id='qanda_submit_button', emoji=discord.PartialEmoji.from_str(Emoji.QANDA))
     async def ask_callback(self, interaction: discord.Interaction, button: Button):
         await interaction.response.send_modal(QandaForm(self.client))
 

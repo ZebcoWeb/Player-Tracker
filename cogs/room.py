@@ -17,7 +17,7 @@ class Room(commands.Cog):
         self.room_context = None
         self.view = None
         self.client.ctx_menus.append(
-            ContextMenu(name='📩 Send room invite', callback=self.send_room_invite_url, guild_ids=[Config.SERVER_ID])
+            ContextMenu(name='📩 Send Room Invite', callback=self.send_room_invite_url, guild_ids=[Config.SERVER_ID])
         )
 
     async def cog_load(self):

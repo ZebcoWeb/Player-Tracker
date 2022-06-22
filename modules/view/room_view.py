@@ -35,11 +35,12 @@ class RoomSendInvite(discord.ui.View):
         overwrites = vc_room.overwrites
         overwrites[interaction.user] = discord.PermissionOverwrite(connect=True, view_channel=True)
         await vc_room.edit(overwrites=overwrites)
-        em = discord.Embed(
-            description=f'{Emoji.ARROW_FORWARD} Your invite URL: {self.room_model.invite_url}',
-            colour=Colour.green()
+
+        join_room_view = discord.ui.View(timeout=None)
+        join_room_view.add_item(
+            discord.ui.Button(label='ㅤㅤJoin Nowㅤㅤ', url=self.room_model.invite_url,)
         )
-        await interaction.response.send_message(embed=em)
+        await interaction.response.send_message(view=join_room_view)
         
         room_text_channel = await self.client.fetch_channel(self.room_model.room_create_channel_id)
         await room_text_channel.send(
@@ -672,7 +673,7 @@ class RoomConfirmButton(discord.ui.Button):
             color=Colour.blue()
         )
         em.set_author(name=C.CONTEXT_CREATED_ROOM.get('title'), icon_url=C.CONTEXT_CREATED_ROOM.get('icon_url'))
-        await interaction.message.edit(
+        await interaction.response.edit_message(
             embed=em,
             view=RoomUserPanel(room_model.invite_url)
         )

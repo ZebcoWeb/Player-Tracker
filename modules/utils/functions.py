@@ -89,7 +89,7 @@ def small_letter(text: str) -> str:
         'w': 'ᴡ',
         'x': 'x',
         'y': 'ʏ',
-        'x': 'ᴢ',
+        'z': 'ᴢ',
     }
 
     for char in string:
