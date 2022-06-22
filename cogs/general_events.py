@@ -42,5 +42,14 @@ class Event(commands.Cog):
             await thread.leave()
 
 
+    # Reaction for suggestions event
+    @commands.Cog.listener('on_message')
+    async def add_reaction_for_suggestion(self, message:discord.Message):
+        if message.channel.id == Channel.SUGGESTIONS and not message.author.bot:
+            if not message.reference:
+                await message.add_reaction('👍')
+                await message.add_reaction('👎')
+
+
 async def setup(client:commands.Bot):
     await client.add_cog(Event(client))
