@@ -1,28 +1,41 @@
 import sys
 import inspect
+from click import command
 import discord
 
-from discord import Intents, __version__
+from discord import Intents, __version__, app_commands
 from discord.ext.commands import Bot, when_mentioned_or
 
 from data.config import Config
 from modules.config import Env, init_database, init_cache
 from modules.models import GameModel, QandaModel, LangModel
-from modules.utils import load_extentions, load_ctxs
+from modules.utils import load_extentions, load_ctxs, error_embed
 
 from modules.view import PersistentView
 
 
+
+class CommandTree(app_commands.CommandTree):
+    def __init__(self, client, *args, **kwargs):
+        super().__init__(client, *args, **kwargs)
+
+    async def on_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, (app_commands.MissingPermissions)):
+            await interaction.response.send_message(embed=error_embed(f'You don\'t have permission to use this command'), ephemeral=True)
+        elif isinstance(error, app_commands.MissingRole):
+            await interaction.response.send_message(embed=error_embed(f'You don\'t have the required role to use this command'), ephemeral=True)
+        elif isinstance(error, app_commands.CommandOnCooldown):
+            await interaction.response.send_message(embed=error_embed(f'You are on cooldown for `{round(error.retry_after, 2)}` seconds'), ephemeral=True)
 
 class BotClient(Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(
             help_command = None,
             command_prefix = when_mentioned_or('!'),
-            intents=Intents.all()
+            intents=Intents.all(),
+            tree_cls=CommandTree,
         )
         self.persistent_views_added = False
-
 
     async def setup_hook(self) -> None:
 
@@ -97,11 +110,11 @@ class BotClient(Bot):
         print('> Loaded persistent views --> ' + ', '.join(pview for pview in views_added))
         print('> Number of games loaded --> ' + str(len(self.games)))
 
+
+
 def run_discord_client():
 
     print('\n> Starting...')
-
-    # Run the client
     BotClient().run(Env.TOKEN)
 
 if __name__ == '__main__':

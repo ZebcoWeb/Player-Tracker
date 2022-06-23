@@ -20,7 +20,7 @@ class Member(commands.Cog):
             if member.id not in registered_members:
                 await MemberModel.join_member(member)
 
-    # Event listeners
+    # Event Handlers
     @commands.Cog.listener('on_member_join')
     async def register_new_member(self, member: discord.Member):
         await MemberModel.join_member(member)

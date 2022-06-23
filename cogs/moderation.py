@@ -44,6 +44,7 @@ class MainModeration(commands.Cog):
     
     @app_commands.command(name='unban', description='🚫 Unban a user (admin only)')
     @app_commands.checks.has_permissions(administrator=True)
+    @discord.ext.commands.has_permissions(administrator=True)
     @app_commands.guilds(Config.SERVER_ID)
     @app_commands.describe(user='User to ban')
     async def unban(self, interaction: discord.Interaction, user: discord.Member):
@@ -92,34 +93,29 @@ class MainModeration(commands.Cog):
             await user.add_roles(graphic_card__role)
             await interaction.response.send_message(embed=success_embed(f'User {user.mention} has been set to Graphic Card'))
 
-    @commands.hybrid_command(name='clear', description='🧹 Clear messages')
-    @app_commands.guilds(Config.SERVER_ID)
-    @app_commands.checks.has_permissions(administrator=True)
-    @app_commands.describe(number='Number of messages to clear [0 for clear all]')
-    async def clear_messages(self, ctx: commands.Context, number: int):
+    @commands.command(name='clear')
+    @commands.has_permissions(administrator=True)
+    async def clear_messages(self, ctx: commands.Context, number: int = None):
         try:
-            if number == 0:
+            if not number:
                 messages_number = len([message async for message in ctx.channel.history(limit=None)])
-                if ctx.interaction:
-                    await ctx.channel.purge(limit=messages_number, bulk=True)
-                    await ctx.interaction.response.send_message(
-                        embed=success_embed(f'{messages_number} messages cleared'),
-                        ephemeral=True
-                    )
-                else:
-                    await ctx.channel.purge(limit=messages_number + 1, bulk=True)
+                await ctx.channel.purge(limit=messages_number + 1, bulk=True)
             else:
-                if ctx.interaction:
-                    await ctx.channel.purge(limit=number, bulk=True)
-                    await ctx.interaction.response.send_message(
-                        embed=success_embed(f'{number} messages cleared'),
-                        ephemeral=True
-                    )
-                else:
+                if number > 0:
                     await ctx.channel.purge(limit=number + 1, bulk=True)
-        except Exception as e:
-            pass 
+                else:
+                    await ctx.channel.send(embed=error_embed('Number must be greater than 0'))
+        except:
+            await ctx.send(embed=error_embed('There was a problem'))
 
+
+    # Event Handlers
+    @commands.Cog.listener('on_command_error')
+    async def commands_error_handler(self, ctx: commands.Context, error):
+        if isinstance(error, commands.MissingAnyRole):
+            await ctx.send(embed=error_embed('You are missing a role to use this command'), )
+        elif isinstance(error, commands.MissingPermissions):
+            await ctx.send(embed=error_embed('You are missing permissions to use this command'))
 
 async def setup(client:commands.Bot):
     await client.add_cog(MainModeration(client))

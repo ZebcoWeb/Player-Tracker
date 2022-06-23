@@ -15,6 +15,7 @@ from modules.models import QandaModel, MemberModel
 class Qanda(commands.Cog):
     def __init__(self, client:commands.Bot):
         self.client = client
+        
         self.client.ctx_menus.append(
             ContextMenu(name='🤔 Best Answer', callback=self.qanda_choose_answer, guild_ids=[Config.SERVER_ID])
         )
@@ -48,7 +49,7 @@ class Qanda(commands.Cog):
 
     # General commands
     @ask.command(name='new', description = '🤔 Ask a new gaming question')
-    @app_commands.checks.cooldown(1, 10)
+    @app_commands.checks.cooldown(1, 1800)
     @is_ban()
     @is_inviter()
     async def ask_new(self, interaction: discord.Interaction):
@@ -58,7 +59,7 @@ class Qanda(commands.Cog):
     @ask.command(name='search', description='🤔 Search for a question')
     @app_commands.autocomplete(query=qanda_search_autocomplete)
     @app_commands.describe(query='Search query...')
-    @app_commands.checks.cooldown(1, 15)
+    @app_commands.checks.cooldown(1, 5)
     @is_ban()
     @is_inviter()
     async def ask_search(
@@ -95,7 +96,7 @@ class Qanda(commands.Cog):
     @ask.command(name='list', description='🤔 List latest questions')
     @app_commands.autocomplete(game=qanda_games_autocomplete)
     @app_commands.describe(game='Enter game for list filter (Optional)')
-    @app_commands.checks.cooldown(1, 15)
+    @app_commands.checks.cooldown(1, 5)
     @is_ban()
     @is_inviter()
     async def ask_list(
@@ -141,7 +142,7 @@ class Qanda(commands.Cog):
 
 
     @ask.command(name='top', description='🤔 List of top respondents')
-    @app_commands.checks.cooldown(1, 10)
+    @app_commands.checks.cooldown(1, 5)
     @is_ban()
     @is_inviter()
     async def top_list(
@@ -263,18 +264,6 @@ class Qanda(commands.Cog):
                     await interaction.response.send_message(embed=success_embed(f'Question deactivated'), ephemeral=True)
         else:
             await interaction.response.send_message(embed=error_embed('Question not found'), ephemeral=True)
-
-    
-    @ask_new.error
-    @ask_search.error
-    @ask_list.error
-    @top_list.error
-    async def on_commands_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
-        if isinstance(error, app_commands.CommandOnCooldown):
-            await interaction.response.send_message(
-                embed=error_embed(f'You are on cooldown for `{round(error.retry_after, 2)}` seconds'), 
-                ephemeral=True
-            )
 
 async def setup(client: commands.Bot):
     await client.add_cog(Qanda(client))
