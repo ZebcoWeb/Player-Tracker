@@ -183,11 +183,9 @@ class CreateRoomChooseLang(discord.ui.View):
     async def choose_lang(self, interaction: discord.Interaction):
         
         self.lang = interaction.data['values'][0]
-
         next_button: discord.ui.Button = discord.utils.get(
             self.children, custom_id='choose_next_lang_button'
         )
-
         self.room_model.lang = discord.utils.get(self.client.langs, name=self.lang)
 
         next_button.disabled = False

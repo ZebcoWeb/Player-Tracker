@@ -61,7 +61,11 @@ class Room(commands.Cog):
     @room.command(name='remove', description='🕹️ Remove a room')
     @app_commands.checks.has_permissions(administrator=True)
     @app_commands.describe(room_id='room voice channel id')
-    async def remove_room(self, interaction: discord.Interaction, room_id: str) -> None:
+    async def remove_room(
+        self, 
+        interaction: discord.Interaction, 
+        room_id: str
+    ) -> None:
         room_id = int(room_id)
         room_model = await RoomModel.find_one(RoomModel.room_voice_channel_id == room_id)
         if room_model:

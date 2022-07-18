@@ -15,7 +15,8 @@ class Survey(commands.Cog):
     def __init__(self, client:commands.Bot):
         self.client = client
 
-        self.send_survey_loop.start()
+        if Config.SURVEY_IS_ACTIVE:
+            self.send_survey_loop.start()
     
     room = Group(name='survey-mod', description='📮 Survay moderation commands (admin only)', guild_ids=[Config.SERVER_ID])
 

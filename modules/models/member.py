@@ -2,7 +2,7 @@ import discord
 
 from datetime import datetime, timedelta
 from typing import List, Optional
-from beanie import Document, Indexed, Link, Replace, after_event
+from beanie import Document, Indexed, Link
 from pydantic import Field, conint, BaseModel
 from pymongo import TEXT
 
@@ -28,13 +28,12 @@ class MemberModel(Document):
     question_asked_count: conint(ge=0) = 0
     question_answered_count: conint(ge=0) = 0
     invite_count: conint(ge=0) = 0
+
     lang: Optional[Link[LangModel]]
     total_play_time: Optional[timedelta]
-
     latest_game_played: Optional[Link[GameModel]]
     games_played: List[Link[GameModel]] = []
     wikis_used: List[Link[WikiModel]] = []
-    survey_result = Optional[Link[None]]
 
     is_staff: bool = False
     is_surveyed: bool = False

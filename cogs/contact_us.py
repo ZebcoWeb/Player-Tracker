@@ -45,7 +45,11 @@ class ContactUs(commands.Cog):
     @support_mod.command(name='close', description='💬 Close ticket')
     @app_commands.describe(channel='Channel to close the ticket (Optional)')
     @app_commands.checks.has_permissions(manage_channels=True)
-    async def contact_us_close(self, interaction: discord.Interaction, channel: discord.TextChannel = None):
+    async def contact_us_close(
+        self, 
+        interaction: discord.Interaction, 
+        channel: discord.TextChannel = None
+    ):
         if channel is None:
             channel = interaction.channel
 

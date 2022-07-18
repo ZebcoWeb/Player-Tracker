@@ -124,8 +124,11 @@ class QandaForm(discord.ui.Modal):
             thread_id=thread.id,
             question_message_id=question.id,
         )
-        await QandaModel.insert_one(qanda_model)
-        await interaction.response.send_message(embed=success_embed('Question created!'), ephemeral=True)
+        await qanda_model.save()
         await questioner.update(
             Inc({MemberModel.question_asked_count: 1})
+        )
+        await interaction.response.send_message(
+            embed=success_embed('Question created!'), 
+            ephemeral=True
         )

@@ -86,6 +86,8 @@ class Config:
     IGNORE_EXTENTIONS = []
     IGNORE_INVITE_CHECKER = []
 
+    SURVEY_IS_ACTIVE = True
+
     LEVEL_INDEX_NUM = 6
 
     ROOM_LANGS = (

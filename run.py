@@ -1,6 +1,5 @@
 import sys
 import inspect
-from click import command
 import discord
 
 from discord import Intents, __version__, app_commands
@@ -10,9 +9,7 @@ from data.config import Config
 from modules.config import Env, init_database, init_cache
 from modules.models import GameModel, QandaModel, LangModel
 from modules.utils import load_extentions, load_ctxs, error_embed
-
 from modules.view import PersistentView
-
 
 
 class CommandTree(app_commands.CommandTree):
@@ -39,7 +36,7 @@ class BotClient(Bot):
 
     async def setup_hook(self) -> None:
 
-        
+
         # Set up the database and check the connection status
         print('> Check the database connection...')
         await init_database(loop=self.loop)
@@ -53,7 +50,7 @@ class BotClient(Bot):
         # Load extentions
         print('> Loading extentions...')
         await load_extentions(self)
-
+        
         # Load context menus
         print('> Loading Context menus...')
         load_ctxs(self.tree, self.ctx_menus)
@@ -94,7 +91,7 @@ class BotClient(Bot):
  ______     __  __     ______     _____     ______     __   __    
 /\  ___\   /\ \_\ \   /\  __ \   /\  __-.  /\  __ \   /\ "-.\ \   
 \ \___  \  \ \  __ \  \ \ \/\ \  \ \ \/\ \ \ \  __ \  \ \ \-.  \  
- \/\_____\  \ \_\ \_\  \ \_____\  \ \____-  \ \_\ \_\  \ \_\" \_\ 
+ \/\_____\  \ \_\ \_\  \ \_____\  \ \____-  \ \_\ \_\  \ \_"  \_\ 
   \/_____/   \/_/\/_/   \/_____/   \/____/   \/_/\/_/   \/_/ \/_/ 
 
 
@@ -109,7 +106,7 @@ class BotClient(Bot):
         print('> Loaded extensions --> ' + ', '.join(self.extensions.keys()))
         print('> Loaded persistent views --> ' + ', '.join(pview for pview in views_added))
         print('> Number of games loaded --> ' + str(len(self.games)))
-
+        print('> Number of languages loaded --> ' + str(len(self.langs)))
 
 
 def run_discord_client():

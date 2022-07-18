@@ -1,10 +1,8 @@
 import discord
-import copy
 
 from discord.ext import commands
 
 from data.config import Config
-from modules.utils import error_embed, success_embed
 from modules.models import MemberModel
 
 
