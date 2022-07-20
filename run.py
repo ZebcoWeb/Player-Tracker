@@ -36,7 +36,6 @@ class BotClient(Bot):
 
     async def setup_hook(self) -> None:
 
-
         # Set up the database and check the connection status
         print('> Check the database connection...')
         await init_database(loop=self.loop)

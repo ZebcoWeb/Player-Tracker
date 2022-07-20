@@ -42,7 +42,7 @@ async def had_room_handler(interaction: Interaction):
             return True
         else:
             await interaction.response.send_message(
-                embed=error_embed(f'You already have a room. Delete the previous room to create a new one.\n\n{Emoji.CIRCLE} If your room is not available on the server, send a ticket to <#{Channel.CONTACT_US}>'),
+                embed=error_embed(f'You already have a room. Delete the previous room to create a new one.\n\n▸ If your room is not available on the server, send a ticket to <#{Channel.CONTACT_US}>'),
                 ephemeral=True
             )
             return False
@@ -64,7 +64,7 @@ async def is_inviter_handler(interaction: Interaction):
             if not member.is_staff or member.is_owner:
                 if member.invite_count == 0:
                     await interaction.response.send_message(
-                        embed=error_embed('You must invite at least **one** of your friends to use the features of the platform. By doing this, you will greatly contribute to the development of ***Player Tracker*** community...:wink:'),
+                        embed=error_embed('You must invite at least **one** of your friends to use the features of the platform.'),
                         ephemeral=True
                     )
                     return False

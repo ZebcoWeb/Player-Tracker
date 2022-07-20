@@ -135,8 +135,6 @@ class Qanda(commands.Cog):
                     item_embed = copy.deepcopy(em)
                 elif loop_counter == len(result):
                     embeds.append(item_embed)
-
-            print(embeds)
             paginate = Paginator(timeout=600, client=self.client)
             await paginate.start(interaction, embeds)
 
