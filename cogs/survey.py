@@ -62,8 +62,6 @@ class Survey(commands.Cog):
                     Set({MemberModel.is_surveyed: True})
                 )
     
-    
-
 
 
 async def setup(client:commands.Bot):
