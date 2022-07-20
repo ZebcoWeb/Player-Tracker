@@ -57,6 +57,7 @@ class QandaForm(discord.ui.Modal):
                 min_length = 5,
                 max_length = 100,
                 required = False,
+                default=None
             )
         )
         self.add_item(
@@ -83,18 +84,22 @@ class QandaForm(discord.ui.Modal):
         )
     
     async def on_submit(self, interaction: discord.Interaction):
-        title = discord.utils.get(self.children, custom_id='qanda_title_input').value
+        qanda_title = discord.utils.get(self.children, custom_id='qanda_title_input').value
         game_child = discord.utils.find(lambda c: c.custom_id == 'qanda_game_input', self.children)
         media_child = discord.utils.find(lambda c: c.custom_id == 'qanda_media_input', self.children)
         game = game_child.value if game_child else None
         media_url = await is_media(media_child.value) if media_child else None
-        description = discord.utils.get(self.children, custom_id='qanda_describe_input').value
+        if game == '':
+            game = None
+        if media_url == '':
+            game = None
+        qanda_description = discord.utils.get(self.children, custom_id='qanda_describe_input').value
 
         qanda_channel = await interaction.guild.fetch_channel(Channel.QA_CHANNEL)
 
         em = discord.Embed(
-            title=f'{Emoji.CIRCLE} {title.strip()}',
-            description=f'\u200b\n_{description.strip()}_\n',
+            title=f'{Emoji.CIRCLE} {qanda_title.strip()}',
+            description=f'\u200b\n_{qanda_description.strip()}_\n',
             colour=discord.Colour.yellow(),
             timestamp=datetime.now()
         )
@@ -112,12 +117,11 @@ class QandaForm(discord.ui.Modal):
         await thread.edit(
             slowmode_delay=5
         )
-
         questioner = await MemberModel.find_one(MemberModel.member_id == interaction.user.id)
         qanda_model = QandaModel(
-            title=title,
-            question=description,
-            search_query=f'{title} {description}',
+            title=qanda_title,
+            question=qanda_description,
+            search_query=f'{qanda_title} {qanda_description}',
             game=game,
             media=media_url,
             questioner=questioner,
