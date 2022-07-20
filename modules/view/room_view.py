@@ -609,6 +609,16 @@ class RoomConfirmButton(discord.ui.Button):
             room_model.invite_url = invite.url
             room_model.tracker_channel_id = random.choice(Channel.TRACKER_CHANNELS)
             tracker_channel = client.get_channel(room_model.tracker_channel_id)
+            embed_des = C.CONTEXT_CREATED_ROOM.get('public_des') % (room_model.tracker_channel_id, room_model.room_voice_channel_id, room_model.invite_url)
+            em = discord.Embed(
+            description=embed_des,
+            color=Colour.blue()
+            )
+            em.set_author(name=C.CONTEXT_CREATED_ROOM.get('title'), icon_url=C.CONTEXT_CREATED_ROOM.get('icon_url'))
+            await interaction.response.edit_message(
+                embed=em,
+                view=RoomUserPanel(room_model.invite_url)
+            )
 
             emt_description = tracker_message_players(0, room_model.capacity)
 
@@ -643,7 +653,7 @@ class RoomConfirmButton(discord.ui.Button):
             room_model.tracker_msg_id = tracker_msg.id
 
         elif room_model.mode == 'private':
-
+            embed_des = C.CONTEXT_CREATED_ROOM.get('private_des')
             max_uses = lambda x: 0 if x is None else x
 
             invite = await vc_room.create_invite(
@@ -652,7 +662,15 @@ class RoomConfirmButton(discord.ui.Button):
             )
 
             room_model.invite_url = invite.url
-
+            em = discord.Embed(
+            description=embed_des,
+            color=Colour.blue()
+            )
+            em.set_author(name=C.CONTEXT_CREATED_ROOM.get('title'), icon_url=C.CONTEXT_CREATED_ROOM.get('icon_url'))
+            await interaction.response.edit_message(
+                embed=em,
+                view=RoomUserPanel(room_model.invite_url)
+            )
         
         await room_model.save()
 
@@ -662,19 +680,6 @@ class RoomConfirmButton(discord.ui.Button):
             Set({MemberModel.lang: room_model.lang}),
         )
 
-        if room_model.mode == 'public':
-            embed_des = C.CONTEXT_CREATED_ROOM.get('public_des') % (room_model.tracker_channel_id, room_model.room_voice_channel_id, room_model.invite_url)
-        else:
-            embed_des = C.CONTEXT_CREATED_ROOM.get('private_des')
-        em = discord.Embed(
-            description=embed_des,
-            color=Colour.blue()
-        )
-        em.set_author(name=C.CONTEXT_CREATED_ROOM.get('title'), icon_url=C.CONTEXT_CREATED_ROOM.get('icon_url'))
-        await interaction.response.edit_message(
-            embed=em,
-            view=RoomUserPanel(room_model.invite_url)
-        )
 
 class RoomAgainButton(discord.ui.Button):
     def __init__(self, emoji: Emoji):
