@@ -263,5 +263,13 @@ class Qanda(commands.Cog):
         else:
             await interaction.response.send_message(embed=error_embed('Question not found'), ephemeral=True)
 
+    # Events handlers
+    @commands.Cog.listener('on_message_delete')
+    async def auto_delete_qanda_questions(self, message: discord.Message):
+        if message.channel.id == Channel.QA_CHANNEL and message.author.bot:
+            qanda_model = await QandaModel.find_one(QandaModel.question_message_id == message.id)
+            if qanda_model:
+                await qanda_model.delete()
+
 async def setup(client: commands.Bot):
     await client.add_cog(Qanda(client))
