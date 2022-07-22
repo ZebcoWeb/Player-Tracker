@@ -14,7 +14,7 @@ class GameModel(Document):
     short: constr(strict=True, max_length=5, regex='^[A-Za-z0-9_]+$')
     logo_url: str
     banner_path: Optional[str]
-    total_play_time: Optional[timedelta]
+    total_play_time: timedelta = timedelta()
     used_value: conint(ge=0) = 0
     notif_value: conint(ge=0) = 0
     is_active: bool = True

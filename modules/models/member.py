@@ -30,7 +30,7 @@ class MemberModel(Document):
     invite_count: conint(ge=0) = 0
 
     lang: Optional[Link[LangModel]]
-    total_play_time: Optional[timedelta]
+    total_play_time: timedelta = timedelta()
     latest_game_played: Optional[Link[GameModel]]
     games_played: List[Link[GameModel]] = []
     wikis_used: List[Link[WikiModel]] = []

@@ -71,7 +71,7 @@ class Member(commands.Cog):
                         playtime = datetime.now() - play_status.join_time
                         if playtime > timedelta(minutes=1):
                             member_model = room_model.creator
-                            game_model = member_model.game
+                            game_model = room_model.game
                             member_model.total_play_time += playtime
                             game_model.total_play_time += playtime
                             await member_model.save()
