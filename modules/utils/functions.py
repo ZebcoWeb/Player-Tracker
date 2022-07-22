@@ -1,6 +1,7 @@
-import os, sys, inspect, discord
+import os, sys, inspect, discord, re
 
 from typing import List, Coroutine, Union
+from tweepy import Tweet
 from string import Template
 from datetime import datetime
 from io import BytesIO
@@ -9,7 +10,6 @@ from beanie import Document
 from pymongo import MongoClient
 
 from discord.colour import Colour
-from discord.ext.commands import Bot
 from discord.app_commands import CommandTree, ContextMenu
 
 from data.config import Config, Emoji, Channel
@@ -192,3 +192,16 @@ def tracker_message_players(current_player_count: int, total_player_count: Union
         total_player_count = 'Ꝏ'
     status_str = f'{Emoji.YELLOW_DOT} *The room is currently closed*' if closed else f'{Emoji.GREEN_DOT} *The room is currently online*'
     return f"ㅤㅤㅤㅤ{Emoji.P}{Emoji.L}{Emoji.A}{Emoji.Y}\nㅤㅤㅤㅤㅤㅤㅤ{Emoji.N} {Emoji.O} {Emoji.W}\n\n {status_str} **[{current_player_count}/{total_player_count}]**\n\n**➜ Room Information**"
+
+def split_tweet(tweet: Tweet):
+    tweet_text = tweet.text
+    if tweet_text:
+        quote_raw_text, quote_raw_info = tweet_text.split(' — ')
+        quote_text = quote_raw_text.strip('"')
+        clean_quote_raw_info = re.sub("#[A-Za-z0-9_]+","", quote_raw_info)
+        quote_game = re.search(r'\[(.*?)\]', clean_quote_raw_info).group(0).strip('[]')
+        quote_character = re.sub(r'\[.*?\]', "", clean_quote_raw_info).strip()
+
+        return quote_text, quote_game, quote_character
+    
+    return None, None, None

@@ -8,6 +8,7 @@ class Env:
     load_dotenv('data/.env')
 
     TOKEN = str(getenv('TOKEN'))
+    TWITTER_BEARER_TOKEN = str(getenv('TWITTER_BEARER_TOKEN'))
 
     DATABASE_HOST = str(getenv('DATABASE_HOST'))
     DATABASE_DB = str(getenv('DATABASE_DB'))

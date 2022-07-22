@@ -9,7 +9,6 @@ class QuoteModel(Document):
     character: str
     quote: Indexed(str, pymongo.TEXT)
     game: str
-    like: int = 0
     display_count: int = 0
     is_active: bool = True
     created_at: datetime = Field(default_factory=datetime.utcnow)

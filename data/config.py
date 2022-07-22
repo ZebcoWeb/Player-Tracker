@@ -82,6 +82,8 @@ class Config:
 
     ROOM_CREATION_TIMEOUT = 300
 
+    TWITTER_QUOTES_FEED_USERNAME = 'VGQuotesBot'
+
     IGNORE_MODELS = ['wiki']
     IGNORE_EXTENTIONS = []
     IGNORE_INVITE_CHECKER = []
@@ -171,6 +173,7 @@ class Category:
 
 class Regex:
     DISCORD_INVITE_LINK = '/(https?://)?(www.)?(discord.(gg|io|me|li)|discordapp.com/invite)/.+[a-z]/g'
+    QUOTE_TWEET = '/"[^"]*"\s—(\s([a-zA-Z]+\s)+)\[[^\]]*\]'
 
 class Assets:
     PLAY = 'https://media.discordapp.net/attachments/912750358890160148/978409017057619988/play.png'
