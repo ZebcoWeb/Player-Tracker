@@ -50,19 +50,25 @@ class RoomModel(Document):
 
 
     async def full_delete_room(self, client: discord.Client):
-        channel = await client.fetch_channel(self.room_create_channel_id)
-        vc_channnel = await client.fetch_channel(self.room_voice_channel_id)
-        if channel:
+        try:
+            channel = await client.fetch_channel(self.room_create_channel_id)
             await channel.delete()
-        if vc_channnel:
+        except:
+            pass
+        try:
+            vc_channnel = await client.fetch_channel(self.room_voice_channel_id)
             await vc_channnel.delete()
+        except:
+            pass
         if self.tracker_channel_id:
             tracker_channel = await client.fetch_channel(self.tracker_channel_id)
-            tracker_msg = await tracker_channel.fetch_message(self.tracker_msg_id)
-            if tracker_msg:
+            try:
+                tracker_msg = await tracker_channel.fetch_message(self.tracker_msg_id)
                 embed = tracker_msg.embeds[0]
                 embed.description = tracker_message_players(0, self.capacity, True)
                 await tracker_msg.edit(embed=embed)
+            except:
+                pass
         await self.delete()
 
     # -------------------
