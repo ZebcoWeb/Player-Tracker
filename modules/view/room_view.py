@@ -88,7 +88,7 @@ class CreateRoomView(PersistentView):
         member_model = await MemberModel.find_one({'member_id': user.id})
 
         if new_room_category:
-            channel_name = 'room-' + user.name.lower()
+            channel_name = '▸room-' + user.name.lower()
             
             overwrites = {
                 guild.default_role: discord.PermissionOverwrite(read_messages=False),
@@ -781,12 +781,13 @@ class RoomCloseCancelView(discord.ui.View):
 
     async def callback_no(self, interaction: discord.Interaction):
         self.is_done = True
+
         em = discord.Embed(
-            description='CONTEXT_CHOOSE_ROOM_CONFIRM_DES',
+            description=C.CONTEXT_CONFIRM_ROOM.get('des'),
             color = Colour.green()
         )
-        em.set_author(name='CONTEXT_CHOOSE_ROOM_CONFIRM_HEADER')
-        em.set_footer(text='◇──◇──◇──◇──◇──◇')
+        em.description += '\n\n' + set_level(6, True)
+        em.set_author(name=C.CONTEXT_CONFIRM_ROOM.get('title'))
 
         view = CreateRoomConfirm(self.client, self.room_model)
 
@@ -797,5 +798,8 @@ class RoomCloseCancelView(discord.ui.View):
     
     async def on_timeout(self):
         if not self.is_done:
-            room_channel = await self.client.fetch_channel(self.room_model.room_create_channel_id)
-            await room_channel.delete(reason='Room creation timeout')
+            try:
+                room_channel = await self.client.fetch_channel(self.room_model.room_create_channel_id)
+                await room_channel.delete(reason='Room creation timeout')
+            except:
+                pass

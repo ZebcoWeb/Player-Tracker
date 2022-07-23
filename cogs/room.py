@@ -1,3 +1,4 @@
+from ctypes import Union
 import discord
 import copy
 
@@ -5,7 +6,7 @@ from discord.app_commands import Group, ContextMenu
 from discord.ext import commands
 from discord import app_commands
 
-from data.config import Config, Channel, Assets
+from data.config import Config, Channel, Assets, Category
 from modules.models import MemberModel, RoomModel
 from modules.view import CreateRoomView, RoomPlayerCountButton, RoomSendInvite
 from modules.utils import error_embed, success_embed, tracker_message_players
@@ -83,6 +84,19 @@ class Room(commands.Cog):
                 embed=error_embed(f'Room `{room_id}` not found'),
                 ephemeral=True,
             )
+    
+    # Events handlers
+
+    @commands.Cog.listener('on_guild_channel_delete')
+    async def auto_delete_rooms(self, channel):
+        if channel.type == discord.ChannelType.voice and channel.category_id == Category.ROOMS:
+            room_model = await RoomModel.find_one(RoomModel.room_voice_channel_id == channel.id)
+            if room_model:
+                await room_model.full_delete_room(self.client)
+        elif channel.type == discord.ChannelType.text and channel.category_id == Category.PLATFORM:
+            room_model = await RoomModel.find_one(RoomModel.room_create_channel_id == channel.id)
+            if room_model:
+                await room_model.full_delete_room(self.client)
 
     async def add_player_count_number(self, room, current_player):
         button: discord.Button = discord.utils.find(lambda b: b.custom_id == 'player_count_button', self.view.children)

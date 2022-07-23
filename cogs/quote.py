@@ -36,7 +36,6 @@ class QuoteFeed(AsyncStreamingClient):
                     quote=quote_text,
                     game=quote_game,
                 )
-                print(quote)
                 await quote.save()
 
 class Quote(commands.Cog):

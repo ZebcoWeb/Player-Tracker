@@ -25,7 +25,7 @@ class GameModel(Document):
 
     class Settings:
         use_cache = True
-        cache_expiration_time = timedelta(minutes=15)
+        cache_expiration_time = timedelta(minutes=10)
 
     class Config:
         arbitrary_types_allowed = True
